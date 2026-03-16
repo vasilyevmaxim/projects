@@ -1,0 +1,44 @@
+﻿using StudentTestingSystem.Models.Entities;
+
+namespace StudentTestingSystem.Services;
+
+public interface IGradingService
+{
+    double CalculateScore(Test test, Dictionary<int, string> answers);
+    (double score, int correctCount) CalculateDetailedScore(Test test, Dictionary<int, string> answers);
+}
+
+public class GradingService : IGradingService
+{
+    public double CalculateScore(Test test, Dictionary<int, string> answers)
+    {
+        var (score, _) = CalculateDetailedScore(test, answers);
+        return score;
+    }
+
+    public (double score, int correctCount) CalculateDetailedScore(Test test, Dictionary<int, string> answers)
+    {
+        if (test.TestElements == null || !test.TestElements.Any())
+            return (0, 0);
+
+        int totalQuestions = test.TestElements.Count;
+        double pointsPerQuestion = test.MaxScore / totalQuestions;
+
+        int correctCount = 0;
+
+        foreach (var element in test.TestElements)
+        {
+            if (answers.TryGetValue(element.Id, out var answer))
+            {
+                if (string.Equals(answer?.Trim(), element.CorrectAnswer?.Trim(), 
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    correctCount++;
+                }
+            }
+        }
+
+        double totalScore = correctCount * pointsPerQuestion;
+        return (Math.Round(totalScore, 2), correctCount);
+    }
+}

@@ -1,0 +1,133 @@
+﻿@model TestViewModel
+@{
+    ViewData["Title"] = "Создание теста";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Курсы</a></li>
+                <li class="breadcrumb-item"><a asp-action="CourseTests" asp-route-id="@Model.CourseId">@Model.CourseName</a></li>
+                <li class="breadcrumb-item active">Новый тест</li>
+            </ol>
+        </nav>
+
+        <div class="card">
+            <div class="card-header text-center py-4" style="background: var(--success-gradient);">
+                <i class="bi bi-clipboard-plus display-4 text-white mb-2"></i>
+                <h4 class="text-white mb-0">Новый тест</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateTest" method="post">
+                    <input type="hidden" asp-for="CourseId" />
+
+                    <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Основные параметры</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="Title" class="form-label">Название теста</label>
+                            <input asp-for="Title" class="form-control form-control-lg" 
+                                   placeholder="Например: Контрольный тест №1" />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="MaxScore" class="form-label">Макс. баллов</label>
+                            <input asp-for="MaxScore" type="number" class="form-control form-control-lg" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Описание</label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label asp-for="MaxAttempts" class="form-label">Попыток</label>
+                            <input asp-for="MaxAttempts" type="number" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="TimeLimitMinutes" class="form-label">Время (мин)</label>
+                            <input asp-for="TimeLimitMinutes" type="number" class="form-control" />
+                            <small class="text-muted">0 = без ограничения</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="PassingScorePercent" class="form-label">Проходной %</label>
+                            <div class="input-group">
+                                <input asp-for="PassingScorePercent" type="number" class="form-control" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="mb-3"><i class="bi bi-gear me-2"></i>Настройки</h5>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="ShuffleQuestions" class="form-check-input" type="checkbox" />
+                                <label asp-for="ShuffleQuestions" class="form-check-label"></label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="ShuffleAnswers" class="form-check-input" type="checkbox" />
+                                <label asp-for="ShuffleAnswers" class="form-check-label"></label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="ShowCorrectAnswers" class="form-check-input" type="checkbox" checked />
+                                <label asp-for="ShowCorrectAnswers" class="form-check-label"></label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="ShowResultImmediately" class="form-check-input" type="checkbox" checked />
+                                <label asp-for="ShowResultImmediately" class="form-check-label"></label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="DetectTabSwitch" class="form-check-input" type="checkbox" />
+                                <label asp-for="DetectTabSwitch" class="form-check-label"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="mb-3"><i class="bi bi-calendar me-2"></i>Доступность</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="AvailableFrom" class="form-label">Доступен с</label>
+                            <input asp-for="AvailableFrom" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="AvailableUntil" class="form-label">Доступен до</label>
+                            <input asp-for="AvailableUntil" type="datetime-local" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="AccessPassword" class="form-label">Пароль для доступа</label>
+                        <input asp-for="AccessPassword" class="form-control" placeholder="Оставьте пустым, если не требуется" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Instructions" class="form-label">Инструкции перед тестом</label>
+                        <textarea asp-for="Instructions" class="form-control" rows="3" 
+                                  placeholder="Правила и рекомендации для студентов..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-2"></i>Создать тест
+                        </button>
+                        <a asp-action="CourseTests" asp-route-id="@Model.CourseId" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

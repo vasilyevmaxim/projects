@@ -1,0 +1,107 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace StudentTestingSystem.Models.Entities;
+
+public enum ElementType
+{
+    [Display(Name = "Текстовый ввод")]
+    TextInput = 0,
+    
+    [Display(Name = "Выпадающий список")]
+    Dropdown = 1,
+    
+    [Display(Name = "Одиночный выбор (radio)")]
+    RadioButton = 2,
+    
+    [Display(Name = "Множественный выбор (checkbox)")]
+    Checkbox = 3,
+    
+    [Display(Name = "Да/Нет")]
+    TrueFalse = 4,
+    
+    [Display(Name = "Сопоставление")]
+    Matching = 5,
+    
+    [Display(Name = "Упорядочивание")]
+    Ordering = 6,
+    
+    [Display(Name = "Заполнение пропусков")]
+    FillBlanks = 7,
+    
+    [Display(Name = "Числовой диапазон")]
+    NumericRange = 8
+}
+
+public class TestElement
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    public ElementType Type { get; set; }
+
+    [Required]
+    [MaxLength(1000)]
+    public string QuestionText { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(1000)]
+    public string CorrectAnswer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// JSON с вариантами ответа (для dropdown, radio, checkbox)
+    /// </summary>
+    public string? OptionsJson { get; set; }
+
+    /// <summary>
+    /// Индивидуальный вес вопроса (баллы). Если null - используется равномерное распределение
+    /// </summary>
+    public double? Weight { get; set; }
+
+    /// <summary>
+    /// Подсказка для студента
+    /// </summary>
+    [MaxLength(500)]
+    public string? Hint { get; set; }
+
+    /// <summary>
+    /// Объяснение правильного ответа (показывается после теста)
+    /// </summary>
+    [MaxLength(1000)]
+    public string? Explanation { get; set; }
+
+    /// <summary>
+    /// Время на вопрос в секундах (0 = без ограничения)
+    /// </summary>
+    public int TimeLimit { get; set; } = 0;
+
+    /// <summary>
+    /// Для NumericRange: допустимая погрешность
+    /// </summary>
+    public double? Tolerance { get; set; }
+
+    /// <summary>
+    /// Штраф за неправильный ответ (в процентах от веса вопроса)
+    /// </summary>
+    public int PenaltyPercent { get; set; } = 0;
+
+    /// <summary>
+    /// Разрешить частичные баллы (для множественного выбора)
+    /// </summary>
+    public bool AllowPartialCredit { get; set; } = true;
+
+    /// <summary>
+    /// URL изображения к вопросу
+    /// </summary>
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    public int Order { get; set; }
+
+    [Required]
+    public int TestId { get; set; }
+
+    [ForeignKey(nameof(TestId))]
+    public virtual Test? Test { get; set; }
+}

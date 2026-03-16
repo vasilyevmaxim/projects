@@ -1,0 +1,53 @@
+﻿@model TestViewModel
+@{
+    ViewData["Title"] = "Создать тест";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-plus-lg me-2"></i>Создать тест</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateTest" method="post">
+                    <input type="hidden" asp-for="CourseId" />
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" placeholder="Название теста" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MaxScore" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="MaxScore" class="form-control" />
+                                <span class="input-group-text">баллов</span>
+                            </div>
+                            <span asp-validation-for="MaxScore" class="text-danger"></span>
+                            <div class="form-text">Баллы делятся поровну между вопросами</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MaxAttempts" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="MaxAttempts" class="form-control" />
+                                <span class="input-group-text">попыток</span>
+                            </div>
+                            <span asp-validation-for="MaxAttempts" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-2"></i>Создать и добавить вопросы
+                        </button>
+                        <a asp-action="CourseTests" asp-route-id="@Model.CourseId" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,369 @@
+﻿@model List<StudentResult>
+@using StudentTestingSystem.Models.Entities
+@{
+    var test = ViewBag.Test as Test;
+    ViewData["Title"] = $"Статистика: {test?.Title}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a asp-action="Statistics">Статистика</a></li>
+                <li class="breadcrumb-item active">@test?.Title</li>
+            </ol>
+        </nav>
+        <h2 class="mb-0">
+            <i class="bi bi-bar-chart me-2 text-primary"></i>@test?.Title
+        </h2>
+    </div>
+    <a asp-action="Statistics" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-2"></i>Назад
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--primary-gradient); width: 50px; height: 50px;">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Count</div>
+            <div class="label">Студентов</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--success-gradient); width: 50px; height: 50px;">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Count(r => r.IsPassed)</div>
+            <div class="label">Сдали</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--warning-gradient); width: 50px; height: 50px;">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">
+                @(Model.Any() ? Math.Round(Model.Average(r => r.BestScore), 1) : 0)
+            </div>
+            <div class="label">Средний балл</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--info-gradient); width: 50px; height: 50px;">
+                <i class="bi bi-star"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@test?.MaxScore</div>
+            <div class="label">Макс. балл</div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+            <h4>Результатов пока нет</h4>
+            <p class="text-muted">Студенты ещё не проходили этот тест</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card" style="overflow: visible;">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Результаты студентов</span>
+            <small class="text-muted">Кликните на студента для подробной информации</small>
+        </div>
+        <div class="card-body p-0" style="overflow: visible;">
+            <div class="table-responsive" style="overflow: visible;">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Студент</th>
+                            <th>Группа</th>
+                            <th class="text-center">Лучший балл</th>
+                            <th class="text-center">Попыток</th>
+                            <th class="text-center">Статус</th>
+                            <th class="text-center">Время</th>
+                            <th class="text-end">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model.OrderByDescending(r => r.BestScore))
+                        {
+                            var scorePercent = test?.MaxScore > 0 ? result.BestScore / test.MaxScore * 100 : 0;
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-2" style="width: 35px; height: 35px; font-size: 0.875rem;">
+                                            @(result.User?.FullName.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">@result.User?.FullName</div>
+                                            <small class="text-muted">@result.User?.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@result.User?.GroupNumber</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <div class="progress" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar @(scorePercent >= 80 ? "bg-success" : scorePercent >= 50 ? "bg-warning" : "bg-danger")" 
+                                                 style="width: @scorePercent%"></div>
+                                        </div>
+                                        <span class="fw-medium">@Math.Round(result.BestScore, 1)</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @result.AttemptsUsed / @test?.MaxAttempts
+                                </td>
+                                <td class="text-center">
+                                    @if (result.IsPassed)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check me-1"></i>Сдал
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x me-1"></i>Не сдал
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center text-muted">
+                                    @{
+                                        var minutes = result.TotalTimeSeconds / 60;
+                                        var seconds = result.TotalTimeSeconds % 60;
+                                    }
+                                    @minutes:@seconds.ToString("D2")
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                            <i class="bi bi-gear"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            <li>
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal" 
+                                                   data-bs-target="#attemptsModal-@result.Id">
+                                                    <i class="bi bi-list-ul me-2 text-primary"></i>Просмотр попыток
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form asp-action="AddExtraAttempts" method="post" class="d-inline">
+                                                    <input type="hidden" name="resultId" value="@result.Id" />
+                                                    <input type="hidden" name="extraAttempts" value="1" />
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="bi bi-plus-circle me-2 text-success"></i>Добавить 1 попытку
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form asp-action="AddExtraAttempts" method="post" class="d-inline">
+                                                    <input type="hidden" name="resultId" value="@result.Id" />
+                                                    <input type="hidden" name="extraAttempts" value="3" />
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="bi bi-plus-circle me-2 text-success"></i>Добавить 3 попытки
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form asp-action="ResetStudentResult" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Вы уверены? Все попытки студента будут удалены!')">
+                                                    <input type="hidden" name="resultId" value="@result.Id" />
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i>Сбросить все результаты
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@* Модальные окна для просмотра попыток каждого студента *@
+@foreach (var result in Model)
+{
+    <div class="modal fade" id="attemptsModal-@result.Id" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person me-2"></i>Попытки: @result.User?.FullName
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (result.Attempts?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Балл</th>
+                                        <th>Время</th>
+                                        <th>Дата</th>
+                                        <th class="text-end">Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var attempt in result.Attempts.OrderByDescending(a => a.AttemptNumber))
+                                    {
+                                        var attemptPercent = test?.MaxScore > 0 ? attempt.Score / test.MaxScore * 100 : 0;
+                                        var isVoided = attempt.IsVoided;
+                                        <tr class="@(isVoided ? "table-secondary text-muted" : "")">
+                                            <td>
+                                                <span class="badge @(isVoided ? "bg-secondary" : "bg-primary")">
+                                                    @attempt.AttemptNumber
+                                                </span>
+                                                @if (isVoided)
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-1" title="@attempt.VoidReason">
+                                                        <i class="bi bi-x-circle"></i> Аннулирована
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="fw-medium @(isVoided ? "text-muted text-decoration-line-through" : attemptPercent >= 50 ? "text-success" : "text-danger")">
+                                                    @Math.Round(attempt.Score, 1) / @test?.MaxScore
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var attemptMinutes = attempt.TimeSpentSeconds / 60;
+                                                    var attemptSeconds = attempt.TimeSpentSeconds % 60;
+                                                }
+                                                @attemptMinutes:@attemptSeconds.ToString("D2")
+                                            </td>
+                                            <td>@attempt.CompletedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td class="text-end">
+                                                @if (isVoided)
+                                                {
+                                                    <form asp-action="RestoreAttempt" method="post" class="d-inline"
+                                                          onsubmit="return confirm('Восстановить эту попытку?')">
+                                                        <input type="hidden" name="attemptId" value="@attempt.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Восстановить">
+                                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-warning me-1" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#voidModal-@attempt.Id"
+                                                            title="Аннулировать попытку">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                    <form asp-action="DeleteAttempt" method="post" class="d-inline"
+                                                          onsubmit="return confirm('Удалить эту попытку навсегда?')">
+                                                        <input type="hidden" name="attemptId" value="@attempt.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Удалить">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">Нет данных о попытках</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <form asp-action="ResetStudentResult" method="post" class="d-inline"
+                          onsubmit="return confirm('Вы уверены? Все попытки будут удалены!')">
+                        <input type="hidden" name="resultId" value="@result.Id" />
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Сбросить все попытки
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @* Модальные окна для аннулирования попыток *@
+    @foreach (var attempt in (result.Attempts ?? Enumerable.Empty<TestAttempt>()).Where(a => !a.IsVoided))
+    {
+        <div class="modal fade" id="voidModal-@attempt.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form asp-action="VoidAttempt" method="post">
+                        <input type="hidden" name="attemptId" value="@attempt.Id" />
+                        <div class="modal-header bg-warning bg-opacity-25">
+                            <h5 class="modal-title">
+                                <i class="bi bi-x-circle me-2 text-warning"></i>Аннулировать попытку #@attempt.AttemptNumber
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Аннулирование попытки:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Попытка останется в истории, но будет помечена как недействительная</li>
+                                    <li>Результат попытки не будет учитываться в статистике</li>
+                                    <li>Студенту будет возвращена 1 попытка</li>
+                                    <li>Можно восстановить попытку позже</li>
+                                </ul>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Причина аннулирования (необязательно):</label>
+                                <textarea name="reason" class="form-control" rows="2" 
+                                          placeholder="Например: технические проблемы, случайная отправка..."></textarea>
+                            </div>
+                            <div class="text-muted small">
+                                <i class="bi bi-clock me-1"></i>
+                                Попытка была завершена: @attempt.CompletedAt.ToString("dd.MM.yyyy в HH:mm")
+                                <br>
+                                <i class="bi bi-graph-up me-1"></i>
+                                Результат: @Math.Round(attempt.Score, 1) / @test?.MaxScore баллов
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-x-circle me-2"></i>Аннулировать
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}

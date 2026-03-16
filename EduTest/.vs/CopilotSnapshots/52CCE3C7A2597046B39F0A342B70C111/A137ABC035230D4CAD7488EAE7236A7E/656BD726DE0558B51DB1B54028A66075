@@ -1,0 +1,67 @@
+﻿namespace StudentTestingSystem.Models.ViewModels;
+
+public class StudentDashboardViewModel
+{
+    public string StudentName { get; set; } = string.Empty;
+    public string GroupNumber { get; set; } = string.Empty;
+    public List<CourseResultViewModel> Courses { get; set; } = new();
+    public decimal TotalScore { get; set; }
+    public decimal TotalMaxScore { get; set; }
+}
+
+public class CourseResultViewModel
+{
+    public int CourseId { get; set; }
+    public string CourseTitle { get; set; } = string.Empty;
+    public decimal TotalScore { get; set; }
+    public decimal MaxScore { get; set; }
+    public List<TestResultViewModel> Tests { get; set; } = new();
+}
+
+public class TestResultViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public decimal Score { get; set; }
+    public decimal MaxScore { get; set; }
+    public int AttemptsUsed { get; set; }
+    public int MaxAttempts { get; set; }
+    public bool IsCompleted { get; set; }
+    public bool CanTake { get; set; }
+}
+
+public class TakeTestViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public string CourseName { get; set; } = string.Empty;
+    public decimal MaxScore { get; set; }
+    public int AttemptsLeft { get; set; }
+    public List<QuestionViewModel> Questions { get; set; } = new();
+}
+
+public class QuestionViewModel
+{
+    public int ElementId { get; set; }
+    public int Order { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public bool IsDropdown { get; set; }
+    public List<string> Options { get; set; } = new();
+    public string? Answer { get; set; }
+}
+
+public class SubmitTestViewModel
+{
+    public int TestId { get; set; }
+    public Dictionary<int, string> Answers { get; set; } = new();
+}
+
+public class TestResultSummaryViewModel
+{
+    public string TestTitle { get; set; } = string.Empty;
+    public decimal Score { get; set; }
+    public decimal MaxScore { get; set; }
+    public int CorrectAnswers { get; set; }
+    public int TotalQuestions { get; set; }
+    public bool IsNewBestScore { get; set; }
+}

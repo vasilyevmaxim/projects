@@ -1,0 +1,52 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Вход для студентов";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0"><i class="bi bi-person-fill me-2"></i>Вход для студентов</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="GroupNumber" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-people"></i></span>
+                            <input asp-for="GroupNumber" class="form-control" placeholder="Например: ИС-21" />
+                        </div>
+                        <span asp-validation-for="GroupNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input asp-for="Password" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                        </button>
+                    </div>
+                </form>
+
+                <hr />
+
+                <div class="text-center">
+                    <a asp-action="Register" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-person-plus me-1"></i>Регистрация
+                    </a>
+                    <a asp-action="ForgotPassword" class="btn btn-link">Забыли пароль?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

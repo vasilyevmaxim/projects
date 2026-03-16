@@ -1,0 +1,190 @@
+@model TestResultSummaryViewModel
+@{
+    ViewData["Title"] = "Результат теста";
+    var scorePercent = Model.MaxScore > 0 ? Model.Score / Model.MaxScore * 100 : 0;
+    var scoreClass = scorePercent >= 80 ? "success" : scorePercent >= 50 ? "warning" : "danger";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card @(Model.IsNewBestScore ? "glow-success" : "")">
+            <div class="card-header text-center py-4 @(Model.IsPassed ? "bg-success" : Model.PassingScorePercent > 0 ? "bg-danger" : "bg-primary") text-white">
+                @if (Model.IsPassed)
+                {
+                    <i class="bi bi-trophy display-3 mb-2"></i>
+                    <h2 class="mb-0">Тест сдан!</h2>
+                }
+                else if (Model.PassingScorePercent > 0)
+                {
+                    <i class="bi bi-x-circle display-3 mb-2"></i>
+                    <h2 class="mb-0">Тест не сдан</h2>
+                }
+                else if (Model.IsNewBestScore)
+                {
+                    <i class="bi bi-star-fill display-3 mb-2"></i>
+                    <h2 class="mb-0">Новый лучший результат!</h2>
+                }
+                else
+                {
+                    <i class="bi bi-check-circle display-3 mb-2"></i>
+                    <h2 class="mb-0">Тест завершён</h2>
+                }
+            </div>
+            
+            <div class="card-body p-4">
+                <h4 class="text-center text-muted mb-4">@Model.TestTitle</h4>
+
+                <div class="score-circle mb-4 @(scorePercent >= 80 ? "" : scorePercent >= 50 ? "" : "")">
+                    <span class="score" style="color: var(--bs-@scoreClass);">@Math.Round(Model.Score, 1)</span>
+                    <span class="label">из @Model.MaxScore баллов</span>
+                </div>
+
+                <div class="progress mb-4" style="height: 20px;">
+                    <div class="progress-bar bg-@scoreClass" style="width: @scorePercent%">
+                        @Math.Round(scorePercent, 0)%
+                    </div>
+                </div>
+
+                @if (Model.PassingScorePercent > 0)
+                {
+                    <div class="text-center mb-4">
+                        <small class="text-muted">
+                            Проходной балл: @Model.PassingScorePercent% 
+                            (@(Model.MaxScore * Model.PassingScorePercent / 100) баллов)
+                        </small>
+                    </div>
+                }
+
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="stat-card p-3 h-100">
+                            <i class="bi bi-check-circle text-success fs-3"></i>
+                            <div class="value" style="font-size: 1.5rem;">@Model.CorrectAnswers</div>
+                            <div class="label">Правильно</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card p-3 h-100">
+                            <i class="bi bi-dash-circle text-warning fs-3"></i>
+                            <div class="value" style="font-size: 1.5rem;">@Model.PartialAnswers</div>
+                            <div class="label">Частично</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card p-3 h-100">
+                            <i class="bi bi-x-circle text-danger fs-3"></i>
+                            <div class="value" style="font-size: 1.5rem;">@Model.WrongAnswers</div>
+                            <div class="label">Неверно</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-4 mb-4 text-muted">
+                    <div>
+                        <i class="bi bi-clock me-1"></i>
+                        Время: <strong>@Model.TimeSpentFormatted</strong>
+                    </div>
+                    <div>
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        Осталось попыток: <strong>@Model.AttemptsLeft</strong>
+                    </div>
+                    @if (Model.IsSuspicious)
+                    {
+                        <div class="alert alert-warning d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span>
+                                Зафиксированы переключения вкладок во время прохождения теста
+                                (количество: <strong>@Model.TabSwitchCount</strong>).
+                            </span>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.IsNewBestScore)
+                {
+                    <div class="alert alert-success text-center">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Поздравляем! Это ваш лучший результат по данному тесту.
+                    </div>
+                }
+
+                @if (Model.ShowCorrectAnswers && Model.AnswerReviews.Any())
+                {
+                    <hr class="my-4" />
+                    <h5 class="mb-3">
+                        <i class="bi bi-list-check me-2"></i>Разбор ответов
+                    </h5>
+
+                    @foreach (var review in Model.AnswerReviews)
+                    {
+                        var cardClass = review.IsCorrect ? "correct" : review.IsPartial ? "partial" : "wrong";
+                        <div class="question-card @cardClass">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-secondary">Вопрос @review.Order</span>
+                                <div>
+                                    @if (review.IsCorrect)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check me-1"></i>+@Math.Round(review.PointsEarned, 2) балла
+                                        </span>
+                                    }
+                                    else if (review.IsPartial)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-dash me-1"></i>+@Math.Round(review.PointsEarned, 2) балла
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x me-1"></i>0 баллов
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <p class="mb-3"><strong>@Html.Raw(@review.QuestionText)</strong></p>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded @(review.IsCorrect ? "bg-success bg-opacity-10" : "bg-danger bg-opacity-10")">
+                                        <small class="text-muted d-block">Ваш ответ:</small>
+                                        <span class="@(review.IsCorrect ? "text-success" : "text-danger")">
+                                            @(string.IsNullOrEmpty(review.YourAnswer) ? "— Нет ответа —" : review.YourAnswer)
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded bg-success bg-opacity-10">
+                                        <small class="text-muted d-block">Правильный ответ:</small>
+                                        <span class="text-success fw-medium">@review.CorrectAnswer</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(review.Explanation))
+                            {
+                                <div class="alert alert-light mt-3 mb-0">
+                                    <i class="bi bi-lightbulb me-2 text-warning"></i>
+                                    <em>@review.Explanation</em>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+
+                <div class="d-grid gap-2 mt-4">
+                    @if (Model.AttemptsLeft > 0)
+                    {
+                        <a asp-action="StartTest" asp-route-id="@Model.TestId" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-repeat me-2"></i>Попробовать снова
+                        </a>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-house me-2"></i>Вернуться к результатам
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

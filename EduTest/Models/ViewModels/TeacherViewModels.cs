@@ -1,0 +1,215 @@
+using Microsoft.AspNetCore.Mvc.Rendering;
+using StudentTestingSystem.Models.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace StudentTestingSystem.Models.ViewModels;
+
+public class CourseViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Введите название курса")]
+    [MaxLength(200)]
+    [Display(Name = "Название курса")]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    [Display(Name = "Описание")]
+    public string? Description { get; set; }
+
+    public int TestsCount { get; set; }
+    public double TotalMaxScore { get; set; }
+    public int StudentsCount { get; set; }
+    public double AverageScore { get; set; }
+
+    // НОВОЕ: назначение курса группам
+    [Display(Name = "Группы, которым доступен курс")]
+    public List<int> SelectedGroupIds { get; set; } = new();
+    public IEnumerable<SelectListItem> AllGroups { get; set; } = Enumerable.Empty<SelectListItem>();
+    public bool IsHidden { get; set; }
+    public bool IsLocked { get; set; }
+}
+public class LectureViewModel
+{
+    public int TestId { get; set; }
+    public int CourseId { get; set; }
+
+    [Display(Name = "Название")]
+    public string Title { get; set; } = string.Empty;
+
+    [Display(Name = "Содержимое лекции")]
+    public string Content { get; set; } = string.Empty;
+}
+public class LectureCreateViewModel
+{
+    public int CourseId { get; set; }
+    public string? CourseName { get; set; }
+
+    [Required(ErrorMessage = "Введите название лекции")]
+    [MaxLength(200)]
+    [Display(Name = "Название лекции")]
+    public string Title { get; set; } = string.Empty;
+
+    [Display(Name = "Краткое описание (опционально)")]
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [Display(Name = "Содержимое лекции")]
+    [Required(ErrorMessage = "Введите текст лекции")]
+    public string Content { get; set; } = string.Empty;
+}
+public class TestViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Введите название теста")]
+    [MaxLength(200)]
+    [Display(Name = "Название теста")]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    [Display(Name = "Описание теста")]
+    public string? Description { get; set; }
+
+    [Required(ErrorMessage = "Введите максимальный балл")]
+    [Range(1, 1000, ErrorMessage = "Балл должен быть от 1 до 1000")]
+    [Display(Name = "Максимальный балл")]
+    public double MaxScore { get; set; }
+
+    [Required(ErrorMessage = "Введите количество попыток")]
+    [Range(1, 100, ErrorMessage = "Попыток от 1 до 100")]
+    [Display(Name = "Количество попыток")]
+    public int MaxAttempts { get; set; }
+
+    [Display(Name = "Время на тест (минуты, 0 = без ограничения)")]
+    [Range(0, 600)]
+    public int TimeLimitMinutes { get; set; } = 0;
+
+    [Display(Name = "Перемешивать вопросы")]
+    public bool ShuffleQuestions { get; set; }
+
+    [Display(Name = "Перемешивать ответы")]
+    public bool ShuffleAnswers { get; set; }
+
+    [Display(Name = "По одному вопросу на странице")]
+    public bool OneQuestionPerPage { get; set; }
+
+    [Display(Name = "Запретить возврат к предыдущим вопросам")]
+    public bool PreventBackNavigation { get; set; }
+
+    [Display(Name = "Проходной балл (%, 0 = не используется)")]
+    [Range(0, 100)]
+    public int PassingScorePercent { get; set; } = 0;
+
+    [Display(Name = "Показывать правильные ответы после теста")]
+    public bool ShowCorrectAnswers { get; set; } = true;
+
+    [Display(Name = "Показывать результат сразу")]
+    public bool ShowResultImmediately { get; set; } = true;
+
+    [Display(Name = "Доступен с")]
+    public DateTime? AvailableFrom { get; set; }
+
+    [Display(Name = "Доступен до")]
+    public DateTime? AvailableUntil { get; set; }
+
+    [Display(Name = "Пароль для доступа")]
+    [MaxLength(50)]
+    public string? AccessPassword { get; set; }
+
+    [Display(Name = "Отслеживать переключение вкладок")]
+    public bool DetectTabSwitch { get; set; }
+
+    [Display(Name = "Запретить копирование и правый клик")]
+    public bool DisableCopyPaste { get; set; }
+
+    [Display(Name = "Инструкции перед тестом")]
+    [MaxLength(2000)]
+    public string? Instructions { get; set; }
+
+    [Display(Name = "Это лекция (без вопросов)")]
+    public bool IsLecture { get; set; }
+
+    public int CourseId { get; set; }
+    public string? CourseName { get; set; }
+
+    public List<TestElementViewModel> Elements { get; set; } = new();
+}
+
+public class TestElementViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Выберите тип вопроса")]
+    [Display(Name = "Тип вопроса")]
+    public ElementType Type { get; set; }
+
+    [Required(ErrorMessage = "Введите текст вопроса")]
+    [MaxLength(5000)]
+    [Display(Name = "Текст вопроса")]
+    public string QuestionText { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Введите правильный ответ")]
+    [MaxLength(1000)]
+    [Display(Name = "Правильный ответ")]
+    public string CorrectAnswer { get; set; } = string.Empty;
+
+    [Display(Name = "Варианты ответов (через | )")]
+    public string? Options { get; set; }
+
+    [Display(Name = "Вес вопроса (баллы)")]
+    public double? Weight { get; set; }
+
+    [Display(Name = "Подсказка")]
+    [MaxLength(500)]
+    public string? Hint { get; set; }
+
+    [Display(Name = "Пояснение ответа")]
+    [MaxLength(1000)]
+    public string? Explanation { get; set; }
+
+    [Display(Name = "Время на вопрос (сек, 0 = без ограничения)")]
+    public int TimeLimit { get; set; } = 0;
+
+    [Display(Name = "Погрешность (для числовых ответов)")]
+    public double? Tolerance { get; set; }
+
+    [Display(Name = "Штраф за ошибку (%)")]
+    [Range(0, 100)]
+    public int PenaltyPercent { get; set; } = 0;
+
+    [Display(Name = "Частичные баллы")]
+    public bool AllowPartialCredit { get; set; } = true;
+
+    [Display(Name = "URL изображения")]
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
+    public int Order { get; set; }
+}
+
+public class TestStatisticsViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public int TotalAttempts { get; set; }
+    public int UniqueStudents { get; set; }
+    public double AverageScore { get; set; }
+    public double HighestScore { get; set; }
+    public double LowestScore { get; set; }
+    public int PassedCount { get; set; }
+    public int FailedCount { get; set; }
+    public double PassRate { get; set; }
+    public double AverageTimeMinutes { get; set; }
+    public List<QuestionStatViewModel> QuestionStats { get; set; } = new();
+}
+
+public class QuestionStatViewModel
+{
+    public int ElementId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public int TotalAnswers { get; set; }
+    public int CorrectAnswers { get; set; }
+    public double CorrectPercent { get; set; }
+    public string MostCommonWrongAnswer { get; set; } = string.Empty;
+}

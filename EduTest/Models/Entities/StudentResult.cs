@@ -1,0 +1,107 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace StudentTestingSystem.Models.Entities;
+
+public class StudentResult
+{
+    [Key]
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Лучший результат
+    /// </summary>
+    public double BestScore { get; set; }
+
+    /// <summary>
+    /// Последний результат
+    /// </summary>
+    public double LastScore { get; set; }
+
+    public int AttemptsUsed { get; set; }
+
+    public bool IsCompleted { get; set; }
+
+    /// <summary>
+    /// Пройден ли проходной балл
+    /// </summary>
+    public bool IsPassed { get; set; }
+
+    /// <summary>
+    /// Общее время прохождения (секунды)
+    /// </summary>
+    public int TotalTimeSeconds { get; set; }
+
+    public DateTime? FirstAttemptAt { get; set; }
+
+    public DateTime LastAttemptAt { get; set; } = DateTime.Now;
+
+    [Required]
+    public int UserId { get; set; }
+
+    [ForeignKey(nameof(UserId))]
+    public virtual User? User { get; set; }
+
+    [Required]
+    public int TestId { get; set; }
+
+    [ForeignKey(nameof(TestId))]
+    public virtual Test? Test { get; set; }
+
+    public virtual ICollection<TestAttempt> Attempts { get; set; } = new List<TestAttempt>();
+}
+
+/// <summary>
+/// Детальная информация о каждой попытке
+/// </summary>
+public class TestAttempt
+{
+    [Key]
+    public int Id { get; set; }
+
+    public int AttemptNumber { get; set; }
+
+    public double Score { get; set; }
+
+    public int CorrectAnswers { get; set; }
+
+    public int TotalQuestions { get; set; }
+
+    /// <summary>
+    /// Время прохождения в секундах
+    /// </summary>
+    public int TimeSpentSeconds { get; set; }
+
+    public DateTime StartedAt { get; set; }
+
+    public DateTime CompletedAt { get; set; }
+
+    /// <summary>
+    /// JSON с ответами студента
+    /// </summary>
+    public string? AnswersJson { get; set; }
+
+    /// <summary>
+    /// Количество переключений вкладок
+    /// </summary>
+    public int TabSwitchCount { get; set; } = 0;
+
+    /// <summary>
+    /// Попытка аннулирована/отменена (не учитывается в результатах)
+    /// </summary>
+    public bool IsVoided { get; set; } = false;
+
+    /// <summary>
+    /// Причина аннулирования (если аннулирована)
+    /// </summary>
+    [MaxLength(500)]
+    public string? VoidReason { get; set; }
+
+    [Required]
+    public int StudentResultId { get; set; }
+
+    [ForeignKey(nameof(StudentResultId))]
+    public virtual StudentResult? StudentResult { get; set; }
+    public bool IsSuspicious { get; set; }   // помечена как подозрительная
+    public string? SuspiciousReason { get; set; }
+}

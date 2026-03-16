@@ -1,0 +1,74 @@
+﻿@model List<Test>
+@{
+    ViewData["Title"] = $"Тесты курса: {ViewBag.CourseName}";
+    var courseId = (int)ViewBag.CourseId;
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Курсы</a></li>
+        <li class="breadcrumb-item active">@ViewBag.CourseName</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-file-text me-2"></i>@ViewBag.CourseName — Тесты</h2>
+    <a asp-action="CreateTest" asp-route-courseId="@courseId" class="btn btn-success">
+        <i class="bi bi-plus-lg me-2"></i>Добавить тест
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        Тесты для этого курса пока не созданы.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Название</th>
+                    <th class="text-center">Макс. балл</th>
+                    <th class="text-center">Попытки</th>
+                    <th class="text-center">Дата создания</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var test in Model)
+                {
+                    <tr>
+                        <td>
+                            <i class="bi bi-clipboard-check me-2 text-primary"></i>
+                            @test.Title
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">@test.MaxScore баллов</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@test.MaxAttempts попыток</span>
+                        </td>
+                        <td class="text-center text-muted">
+                            @test.CreatedAt.ToString("dd.MM.yyyy")
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="EditTest" asp-route-id="@test.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil me-1"></i>Редактировать
+                            </a>
+                            <form asp-action="DeleteTest" asp-route-id="@test.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Удалить тест?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

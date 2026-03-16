@@ -1,0 +1,170 @@
+﻿using StudentTestingSystem.Models.Entities;
+
+namespace StudentTestingSystem.Models.ViewModels;
+
+public class StudentDashboardViewModel
+{
+    public string StudentName { get; set; } = string.Empty;
+    public string GroupNumber { get; set; } = string.Empty;
+    public List<CourseResultViewModel> Courses { get; set; } = new();
+    public double TotalScore { get; set; }
+    public double TotalMaxScore { get; set; }
+    public int CompletedTests { get; set; }
+    public int TotalTests { get; set; }
+    public int PassedTests { get; set; }
+}
+
+public class CourseResultViewModel
+{
+    public int CourseId { get; set; }
+    public string CourseTitle { get; set; } = string.Empty;
+    public string? CourseDescription { get; set; }
+    public double TotalScore { get; set; }
+    public double MaxScore { get; set; }
+    public double ProgressPercent { get; set; }
+    public List<TestResultViewModel> Tests { get; set; } = new();
+}
+
+public class TestResultViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public string? TestDescription { get; set; }
+    public double BestScore { get; set; }
+    public double LastScore { get; set; }
+    public double MaxScore { get; set; }
+    public int AttemptsUsed { get; set; }
+    public int MaxAttempts { get; set; }
+    public bool IsCompleted { get; set; }
+    public bool IsPassed { get; set; }
+    public bool CanTake { get; set; }
+    public int TimeLimitMinutes { get; set; }
+    public int PassingScorePercent { get; set; }
+    public DateTime? AvailableFrom { get; set; }
+    public DateTime? AvailableUntil { get; set; }
+    public bool IsAvailable { get; set; }
+    public bool RequiresPassword { get; set; }
+    public int QuestionsCount { get; set; }
+}
+
+public class TakeTestViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public string? TestDescription { get; set; }
+    public string CourseName { get; set; } = string.Empty;
+    public double MaxScore { get; set; }
+    public int AttemptsLeft { get; set; }
+    public int TimeLimitMinutes { get; set; }
+    public int TimeLimitSeconds { get; set; }
+    public bool OneQuestionPerPage { get; set; }
+    public bool PreventBackNavigation { get; set; }
+    public bool DetectTabSwitch { get; set; }
+    public string? Instructions { get; set; }
+    public int PassingScorePercent { get; set; }
+    public List<QuestionViewModel> Questions { get; set; } = new();
+    public DateTime StartTime { get; set; }
+    public int CurrentQuestionIndex { get; set; } = 0;
+}
+
+public class QuestionViewModel
+{
+    public int ElementId { get; set; }
+    public int Order { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public ElementType Type { get; set; }
+    public List<string> Options { get; set; } = new();
+    public string? Answer { get; set; }
+    public List<string> SelectedAnswers { get; set; } = new();
+    public string? Hint { get; set; }
+    public string? ImageUrl { get; set; }
+    public int TimeLimit { get; set; }
+    public bool AllowPartialCredit { get; set; }
+    
+    // Для сопоставления
+    public List<string> LeftItems { get; set; } = new();
+    public List<string> RightItems { get; set; } = new();
+    
+    // Для упорядочивания
+    public List<string> ItemsToOrder { get; set; } = new();
+}
+
+public class SubmitTestViewModel
+{
+    public int TestId { get; set; }
+    public Dictionary<int, string> Answers { get; set; } = new();
+    public Dictionary<int, List<string>> MultiAnswers { get; set; } = new();
+    public int TimeSpentSeconds { get; set; }
+    public int TabSwitchCount { get; set; }
+    public DateTime StartTime { get; set; }
+}
+
+public class TestResultSummaryViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public double Score { get; set; }
+    public double MaxScore { get; set; }
+    public double ScorePercent { get; set; }
+    public int CorrectAnswers { get; set; }
+    public int PartialAnswers { get; set; }
+    public int WrongAnswers { get; set; }
+    public int TotalQuestions { get; set; }
+    public bool IsNewBestScore { get; set; }
+    public bool IsPassed { get; set; }
+    public int PassingScorePercent { get; set; }
+    public int TimeSpentSeconds { get; set; }
+    public string TimeSpentFormatted { get; set; } = string.Empty;
+    public bool ShowCorrectAnswers { get; set; }
+    public List<AnswerReviewViewModel> AnswerReviews { get; set; } = new();
+    public int AttemptsLeft { get; set; }
+}
+
+public class AnswerReviewViewModel
+{
+    public int Order { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public ElementType Type { get; set; }
+    public string YourAnswer { get; set; } = string.Empty;
+    public string CorrectAnswer { get; set; } = string.Empty;
+    public bool IsCorrect { get; set; }
+    public bool IsPartial { get; set; }
+    public double PointsEarned { get; set; }
+    public double MaxPoints { get; set; }
+    public string? Explanation { get; set; }
+}
+
+public class TestHistoryViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public double BestScore { get; set; }
+    public double MaxScore { get; set; }
+    public List<AttemptViewModel> Attempts { get; set; } = new();
+}
+
+public class AttemptViewModel
+{
+    public int AttemptNumber { get; set; }
+    public double Score { get; set; }
+    public double MaxScore { get; set; }
+    public int CorrectAnswers { get; set; }
+    public int TotalQuestions { get; set; }
+    public int TimeSpentSeconds { get; set; }
+    public string TimeSpentFormatted { get; set; } = string.Empty;
+    public DateTime CompletedAt { get; set; }
+    public bool IsBest { get; set; }
+}
+
+public class TestAccessViewModel
+{
+    public int TestId { get; set; }
+    public string TestTitle { get; set; } = string.Empty;
+    public string? Instructions { get; set; }
+    public int TimeLimitMinutes { get; set; }
+    public int QuestionsCount { get; set; }
+    public int AttemptsLeft { get; set; }
+    public bool RequiresPassword { get; set; }
+    public string? EnteredPassword { get; set; }
+    public string? ErrorMessage { get; set; }
+}

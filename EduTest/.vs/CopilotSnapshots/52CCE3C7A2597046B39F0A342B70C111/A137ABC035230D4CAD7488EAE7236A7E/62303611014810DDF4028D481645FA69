@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">
+        <i class="bi bi-mortarboard-fill text-primary"></i>
+        Система тестирования студентов
+    </h1>
+    <p class="lead text-muted mb-5">
+        Онлайн-платформа для проверки знаний с автоматическим подсчётом баллов
+    </p>
+
+    <div class="row justify-content-center g-4">
+        <div class="col-md-5">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-person-fill display-1 text-primary mb-3"></i>
+                    <h3 class="card-title">Студент</h3>
+                    <p class="card-text text-muted">
+                        Проходите тесты, отслеживайте свою успеваемость и улучшайте результаты
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus me-2"></i>Регистрация
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-person-workspace display-1 text-success mb-3"></i>
+                    <h3 class="card-title">Преподаватель</h3>
+                    <p class="card-text text-muted">
+                        Создавайте курсы и тесты, управляйте результатами студентов
+                    </p>
+                    <div class="d-grid">
+                        <a asp-controller="Account" asp-action="TeacherLogin" class="btn btn-success btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти в панель
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 g-4">
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="bi bi-lightning-charge display-4 text-warning mb-3"></i>
+            <h5>Быстрое оценивание</h5>
+            <p class="text-muted">Автоматический подсчёт баллов сразу после прохождения теста</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="bi bi-graph-up display-4 text-info mb-3"></i>
+            <h5>Отслеживание прогресса</h5>
+            <p class="text-muted">Сводная таблица результатов по всем курсам</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="bi bi-arrow-repeat display-4 text-success mb-3"></i>
+            <h5>Несколько попыток</h5>
+            <p class="text-muted">Возможность улучшить результат с сохранением лучшего</p>
+        </div>
+    </div>
+</div>

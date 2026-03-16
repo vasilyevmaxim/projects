@@ -1,0 +1,130 @@
+﻿@model StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Мои результаты";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="bi bi-person-circle me-2"></i>@Model.StudentName</h2>
+        <span class="badge bg-secondary">Группа: @Model.GroupNumber</span>
+    </div>
+    <div class="text-end">
+        <h4>
+            <span class="badge bg-primary fs-5">
+                Итого: @Model.TotalScore / @Model.TotalMaxScore баллов
+            </span>
+        </h4>
+    </div>
+</div>
+
+@if (!Model.Courses.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        Курсы пока не созданы. Обратитесь к преподавателю.
+    </div>
+}
+else
+{
+    <div class="accordion" id="coursesAccordion">
+        @foreach (var course in Model.Courses)
+        {
+            var courseIndex = Model.Courses.IndexOf(course);
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(courseIndex > 0 ? "collapsed" : "")" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#course@(course.CourseId)">
+                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                            <span>
+                                <i class="bi bi-book me-2 text-primary"></i>
+                                <strong>@course.CourseTitle</strong>
+                            </span>
+                            <span class="badge bg-primary">
+                                @course.TotalScore / @course.MaxScore баллов
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="course@(course.CourseId)" class="accordion-collapse collapse @(courseIndex == 0 ? "show" : "")"
+                     data-bs-parent="#coursesAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Тест</th>
+                                    <th class="text-center">Результат</th>
+                                    <th class="text-center">Попытки</th>
+                                    <th class="text-center">Статус</th>
+                                    <th class="text-end">Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var test in course.Tests)
+                                {
+                                    var progressPercent = test.MaxScore > 0 ? (test.Score / test.MaxScore * 100) : 0;
+                                    var progressClass = progressPercent >= 80 ? "bg-success" : 
+                                                        progressPercent >= 50 ? "bg-warning" : "bg-danger";
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-clipboard-check me-2"></i>@test.TestTitle
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <div class="progress" style="width: 100px; height: 8px;">
+                                                    <div class="progress-bar @progressClass" 
+                                                         style="width: @progressPercent%"></div>
+                                                </div>
+                                                <span class="fw-bold">@test.Score / @test.MaxScore</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">
+                                                @test.AttemptsUsed / @test.MaxAttempts
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (test.IsCompleted && !test.CanTake)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Завершён
+                                                </span>
+                                            }
+                                            else if (test.CanTake)
+                                            {
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-hourglass-split me-1"></i>Доступен
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-lock me-1"></i>Попытки исчерпаны
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            @if (test.CanTake)
+                                            {
+                                                <a asp-action="TakeTest" asp-route-id="@test.TestId" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-play-fill me-1"></i>
+                                                    @(test.AttemptsUsed > 0 ? "Улучшить" : "Начать")
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-secondary" disabled>
+                                                    <i class="bi bi-lock me-1"></i>Недоступен
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

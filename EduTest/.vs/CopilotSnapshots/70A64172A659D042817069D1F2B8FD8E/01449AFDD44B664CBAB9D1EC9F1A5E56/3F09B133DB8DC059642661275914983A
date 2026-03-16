@@ -1,0 +1,375 @@
+﻿@model TestViewModel
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@{
+    ViewData["Title"] = $"Редактирование: {Model.Title}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a asp-action="Index">Курсы</a></li>
+                <li class="breadcrumb-item"><a asp-action="CourseTests" asp-route-id="@Model.CourseId">@Model.CourseName</a></li>
+                <li class="breadcrumb-item active">@Model.Title</li>
+            </ol>
+        </nav>
+        <h2 class="mb-0">
+            <i class="bi bi-pencil-square me-2 text-primary"></i>@Model.Title
+        </h2>
+    </div>
+    <div class="d-flex gap-2">
+        <form asp-action="DuplicateTest" asp-route-id="@Model.Id" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-copy me-2"></i>Дублировать
+            </button>
+        </form>
+        <a asp-action="CourseTests" asp-route-id="@Model.CourseId" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-2"></i>Назад
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 1rem;">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-gear me-2"></i>Настройки теста
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateTest" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CourseId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label asp-for="MaxScore" class="form-label"></label>
+                            <input asp-for="MaxScore" type="number" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="MaxAttempts" class="form-label"></label>
+                            <input asp-for="MaxAttempts" type="number" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label asp-for="TimeLimitMinutes" class="form-label"></label>
+                            <input asp-for="TimeLimitMinutes" type="number" class="form-control" />
+                            <small class="text-muted">0 = без лимита</small>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="PassingScorePercent" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="PassingScorePercent" type="number" class="form-control" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <small class="text-muted">0 = не исп.</small>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="ShuffleQuestions" class="form-check-input" type="checkbox" />
+                            <label asp-for="ShuffleQuestions" class="form-check-label"></label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="ShuffleAnswers" class="form-check-input" type="checkbox" />
+                            <label asp-for="ShuffleAnswers" class="form-check-label"></label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="ShowCorrectAnswers" class="form-check-input" type="checkbox" />
+                            <label asp-for="ShowCorrectAnswers" class="form-check-label"></label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="DetectTabSwitch" class="form-check-input" type="checkbox" />
+                            <label asp-for="DetectTabSwitch" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label asp-for="AvailableFrom" class="form-label"></label>
+                            <input asp-for="AvailableFrom" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="AvailableUntil" class="form-label"></label>
+                            <input asp-for="AvailableUntil" type="datetime-local" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="AccessPassword" class="form-label"></label>
+                        <input asp-for="AccessPassword" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Instructions" class="form-label"></label>
+                        <textarea asp-for="Instructions" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-lg me-2"></i>Сохранить настройки
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-plus-circle me-2"></i>Добавить вопрос</span>
+                <span class="badge bg-white text-success">@Model.Elements.Count вопросов</span>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddElement" method="post">
+                    <input type="hidden" name="testId" value="@Model.Id" />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Тип вопроса</label>
+                            <select name="element.Type" class="form-select" id="questionType" onchange="updateForm()">
+                                @foreach (ElementType enumValue in Enum.GetValues(typeof(ElementType)))
+                                {
+                                    var displayName = enumValue.GetType()
+                                        .GetMember(enumValue.ToString())
+                                        .FirstOrDefault()?
+                                        .GetCustomAttribute<DisplayAttribute>()?
+                                        .Name ?? enumValue.ToString();
+                                    <option value="@((int)enumValue)">@displayName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Вес (баллы)</label>
+                            <input type="number" name="element.Weight" class="form-control" step="0.1" placeholder="Авто" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Время (сек)</label>
+                            <input type="number" name="element.TimeLimit" class="form-control" value="0" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Текст вопроса</label>
+                        <textarea name="element.QuestionText" class="form-control" rows="2" required></textarea>
+                    </div>
+
+                    <div class="mb-3" id="optionsField">
+                        <label class="form-label">Варианты ответа (через |)</label>
+                        <input type="text" name="element.Options" class="form-control" 
+                               placeholder="Вариант 1|Вариант 2|Вариант 3" />
+                        <small class="text-muted" id="optionsHint">Для checkbox правильные ответы тоже через |</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Правильный ответ</label>
+                        <input type="text" name="element.CorrectAnswer" class="form-control" required 
+                               id="correctAnswerField" />
+                        <small class="text-muted" id="answerHint">Введите правильный ответ</small>
+                    </div>
+
+                    <div class="row mb-3" id="numericFields" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label">Погрешность ±</label>
+                            <input type="number" name="element.Tolerance" class="form-control" step="0.01" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Штраф за ошибку (%)</label>
+                            <input type="number" name="element.PenaltyPercent" class="form-control" value="0" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Подсказка</label>
+                            <input type="text" name="element.Hint" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">URL изображения</label>
+                            <input type="text" name="element.ImageUrl" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пояснение (после теста)</label>
+                        <textarea name="element.Explanation" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="element.AllowPartialCredit" value="true" 
+                               class="form-check-input" checked />
+                        <label class="form-check-label">Частичные баллы (для множественного выбора)</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-2"></i>Добавить вопрос
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <h5 class="mb-3"><i class="bi bi-list-ol me-2"></i>Вопросы теста</h5>
+
+        @if (!Model.Elements.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Вопросы ещё не добавлены. Используйте форму выше для добавления.
+            </div>
+        }
+        else
+        {
+            @foreach (var element in Model.Elements.OrderBy(e => e.Order))
+            {
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center py-2">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary me-2">@element.Order</span>
+                            <span class="badge @GetTypeBadge(element.Type) me-2">
+                                @GetTypeName(element.Type)
+                            </span>
+                            @if (element.Weight.HasValue)
+                            {
+                                <span class="badge bg-info">@element.Weight баллов</span>
+                            }
+                        </div>
+                        <form asp-action="DeleteElement" asp-route-id="@element.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Удалить вопрос?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>@element.QuestionText</strong></p>
+                        
+                        @if (!string.IsNullOrEmpty(element.Options))
+                        {
+                            <div class="mb-2">
+                                <small class="text-muted">Варианты:</small>
+                                @foreach (var opt in element.Options.Split('|'))
+                                {
+                                    <span class="badge bg-light text-dark me-1">@opt.Trim()</span>
+                                }
+                            </div>
+                        }
+                        
+                        <div class="d-flex gap-3">
+                            <small>
+                                <span class="text-muted">Ответ:</span>
+                                <span class="text-success fw-medium">@element.CorrectAnswer</span>
+                            </small>
+                            @if (!string.IsNullOrEmpty(element.Hint))
+                            {
+                                <small class="text-muted">
+                                    <i class="bi bi-lightbulb me-1"></i>@element.Hint
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateForm() {
+            const type = document.getElementById('questionType').value;
+            const optionsField = document.getElementById('optionsField');
+            const numericFields = document.getElementById('numericFields');
+            const answerHint = document.getElementById('answerHint');
+            const optionsHint = document.getElementById('optionsHint');
+
+            // По умолчанию показываем
+            numericFields.style.display = 'none';
+            optionsField.style.display = 'block';
+
+            switch (type) {
+                case '0': // TextInput
+                    optionsField.style.display = 'none';
+                    answerHint.textContent = 'Введите правильный текстовый ответ';
+                    break;
+                case '1': // Dropdown
+                case '2': // RadioButton
+                    answerHint.textContent = 'Введите один правильный вариант';
+                    optionsHint.textContent = 'Варианты через |';
+                    break;
+                case '3': // Checkbox
+                    answerHint.textContent = 'Правильные варианты через |';
+                    optionsHint.textContent = 'Все варианты через |';
+                    break;
+                case '4': // TrueFalse
+                    optionsField.style.display = 'none';
+                    answerHint.textContent = 'Введите "Да" или "Нет"';
+                    break;
+                case '5': // Matching
+                    answerHint.textContent = 'Формат: A-1|B-2|C-3';
+                    optionsHint.textContent = 'Левые элементы|Правые элементы';
+                    break;
+                case '6': // Ordering
+                    answerHint.textContent = 'Правильный порядок индексов: 1,2,3,4';
+                    optionsHint.textContent = 'Элементы для сортировки через |';
+                    break;
+                case '7': // FillBlanks
+                    optionsField.style.display = 'none';
+                    answerHint.textContent = 'Слова для пропусков через |';
+                    break;
+                case '8': // NumericRange
+                    optionsField.style.display = 'none';
+                    numericFields.style.display = 'flex';
+                    answerHint.textContent = 'Введите правильное число';
+                    break;
+            }
+        }
+
+        updateForm();
+    </script>
+}
+
+@functions {
+    string GetTypeBadge(ElementType type) => type switch
+    {
+        ElementType.TextInput => "bg-primary",
+        ElementType.Dropdown => "bg-info",
+        ElementType.RadioButton => "bg-info",
+        ElementType.Checkbox => "bg-success",
+        ElementType.TrueFalse => "bg-warning text-dark",
+        ElementType.Matching => "bg-danger",
+        ElementType.Ordering => "bg-secondary",
+        ElementType.FillBlanks => "bg-dark",
+        ElementType.NumericRange => "bg-primary",
+        _ => "bg-secondary"
+    };
+
+    string GetTypeName(ElementType type) => type switch
+    {
+        ElementType.TextInput => "Текст",
+        ElementType.Dropdown => "Список",
+        ElementType.RadioButton => "Radio",
+        ElementType.Checkbox => "Checkbox",
+        ElementType.TrueFalse => "Да/Нет",
+        ElementType.Matching => "Сопоставление",
+        ElementType.Ordering => "Порядок",
+        ElementType.FillBlanks => "Пропуски",
+        ElementType.NumericRange => "Число",
+        _ => "?"
+    };
+}

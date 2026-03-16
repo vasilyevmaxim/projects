@@ -1,0 +1,58 @@
+﻿/* Custom styles for Student Testing System */
+
+/* ===== FILL BLANKS DRAG & DROP ===== */
+.word-bank {
+    border: 2px dashed #dee2e6;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.word-item {
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.word-item:hover:not(.used) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.word-item.used {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+.blank-slot {
+    transition: all 0.2s ease;
+    min-height: 32px;
+    vertical-align: middle;
+}
+
+.blank-slot:hover {
+    background-color: #e3f2fd !important;
+    border-color: #2196f3 !important;
+}
+
+.blank-slot.drag-over {
+    background-color: #bbdefb !important;
+    transform: scale(1.05);
+}
+
+.fill-blanks-text {
+    font-size: 1.1rem;
+    line-height: 2.2;
+}
+
+.blank-value {
+    font-weight: 600;
+    color: #198754;
+}
+
+/* Аннулированные попытки */
+.voided-attempt {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+}
+
+.voided-badge {
+    font-size: 0.7rem;
+}

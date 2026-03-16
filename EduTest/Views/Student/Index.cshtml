@@ -1,0 +1,322 @@
+@model StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Мои результаты";
+}
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h2 class="mb-1">
+            <i class="bi bi-person-circle me-2 text-primary"></i>
+            Привет, @Model.StudentName!
+        </h2>
+        <p class="text-muted mb-0">
+            <span class="badge bg-secondary">Группа: @Model.GroupNumber</span>
+        </p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <div class="score-circle mx-auto mx-lg-0 ms-lg-auto" 
+             style="width: 100px; height: 100px; @(Model.TotalMaxScore > 0 && Model.TotalScore / Model.TotalMaxScore >= 0.8 ? "border-color: #11998e;" : "")">
+            <span class="score" style="font-size: 1.5rem;">@Math.Round(Model.TotalScore, 1)</span>
+            <span class="label" style="font-size: 0.7rem;">из @Model.TotalMaxScore</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--primary-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.CompletedTests / @Model.TotalTests</div>
+            <div class="label">Пройдено тестов</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--success-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.PassedTests</div>
+            <div class="label">Сдано</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--info-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">
+                @(Model.TotalMaxScore > 0 ? Math.Round(Model.TotalScore / Model.TotalMaxScore * 100, 0) : 0)%
+            </div>
+            <div class="label">Средний балл</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--warning-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Courses.Count</div>
+            <div class="label">Курсов</div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Courses.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+            <h4>Тесты пока не созданы</h4>
+            <p class="text-muted">Обратитесь к преподавателю для добавления тестов</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var course in Model.Courses)
+        {
+            <div class="col-12">
+                <div class="card course-card mb-2">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3"
+                         data-bs-toggle="collapse"
+                         data-bs-target="#course-@course.CourseId"
+                         style="cursor: pointer;">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width: 50px; height: 50px; background: var(--primary-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-book text-white fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">
+                                    @course.CourseTitle
+                                    @if (course.IsLocked)
+                                    {
+                                        <span class="badge bg-secondary ms-2">Курс заблокирован</span>
+                                    }
+                                </h5>
+                                @if (!string.IsNullOrEmpty(course.CourseDescription))
+                                {
+                                    <small class="text-muted">@course.CourseDescription</small>
+                                }
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center gap-3">
+                                <div>
+                                    <div class="progress" style="width: 150px;">
+                                        <div class="progress-bar @(course.ProgressPercent >= 80 ? "bg-success" : course.ProgressPercent >= 50 ? "bg-warning" : "bg-danger")"
+                                             style="width: @course.ProgressPercent%"></div>
+                                    </div>
+                                    <small class="text-muted">@course.ProgressPercent% выполнено</small>
+                                </div>
+                                <span class="badge bg-primary fs-6">
+                                    @Math.Round(course.TotalScore, 1) / @course.MaxScore
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="course-@course.CourseId" class="collapse">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Тест</th>
+                                            <th class="text-center">Вопросов</th>
+                                            <th class="text-center">Время</th>
+                                            <th class="text-center">Результат</th>
+                                            <th class="text-center">Попытки</th>
+                                            <th class="text-center">Статус</th>
+                                            <th class="text-end">Действие</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var test in course.Tests)
+                                    {
+                                            if (test.IsLecture)
+                                            {
+                                                // Строка для ЛЕКЦИИ
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-journal-text me-2 text-info"></i>
+                                                            <div class="fw-medium">@test.TestTitle</div>
+                                                        </div>
+                                                    </td>
+
+                                                    @* Вопросы *@
+                                                    <td class="text-center">
+                                                        <span class="text-muted">—</span>
+                                                    </td>
+
+                                                    @* Время *@
+                                                    <td class="text-center">
+                                                        <span class="text-muted">—</span>
+                                                    </td>
+
+                                                    @* Результат *@
+                                                    <td class="text-center">
+                                                        <span class="text-muted">—</span>
+                                                    </td>
+
+                                                    @* Попытки *@
+                                                    <td class="text-center">
+                                                        <span class="text-muted">—</span>
+                                                    </td>
+
+                                                    @* Статус *@
+                                                    <td class="text-center">
+                                                        <span class="badge bg-info">
+                                                            <i class="bi bi-hourglass-split me-1"></i>Доступна
+                                                        </span>
+                                                    </td>
+
+                                                    @* Действие *@
+                                                    <td class="text-end">
+                                                        <a asp-action="StartTest" asp-route-id="@test.TestId"
+                                                           class="btn btn-sm btn-info">
+                                                            <i class="bi bi-book-half me-1"></i>Читать
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                var progressPercent = test.MaxScore > 0 ? (test.BestScore / test.MaxScore * 100) : 0;
+                                                var needScrollTarget = !test.IsPassed && test.CanTake;
+                                                <tr @(needScrollTarget ? "class=\"nearest-test\"" : "")>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-clipboard-check me-2 text-primary"></i>
+                                                            <div>
+                                                                <div class="fw-medium">@test.TestTitle</div>
+                                                                @if (test.PassingScorePercent > 0)
+                                                                {
+                                                                    <span class="badge bg-info" style="font-size: 0.65rem;">
+                                                                        Проходной: @test.PassingScorePercent%
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-light text-dark">@test.QuestionsCount</span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if (test.TimeLimitMinutes > 0)
+                                                        {
+                                                            <span class="badge bg-secondary">
+                                                                <i class="bi bi-clock me-1"></i>@test.TimeLimitMinutes мин
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">—</span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                                            <div class="progress" style="width: 60px; height: 6px;">
+                                                                <div class="progress-bar @(progressPercent >= 80 ? "bg-success" : progressPercent >= 50 ? "bg-warning" : "bg-danger")"
+                                                                     style="width: @progressPercent%"></div>
+                                                            </div>
+                                                            <span class="fw-medium">@Math.Round(test.BestScore, 1)/@test.MaxScore</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge @(test.AttemptsUsed >= test.MaxAttempts ? "bg-danger" : "bg-secondary")">
+                                                            @test.AttemptsUsed / @test.MaxAttempts
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if (test.IsPassed)
+                                                        {
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle me-1"></i>Сдано
+                                                            </span>
+                                                        }
+                                                        else if (test.IsCompleted && !test.CanTake)
+                                                        {
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle me-1"></i>Не сдано
+                                                            </span>
+                                                        }
+                                                        else if (!test.CanTake)
+                                                        {
+                                                            <span class="badge bg-secondary">
+                                                                <i class="bi bi-lock me-1"></i>Недоступно
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-info">
+                                                                <i class="bi bi-hourglass-split me-1"></i>Доступен
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-end">
+                                                        @if (test.CanTake)
+                                                        {
+                                                            <a asp-action="StartTest" asp-route-id="@test.TestId"
+                                                               class="btn btn-sm btn-primary">
+                                                                <i class="bi bi-play-fill me-1"></i>
+                                                                @(test.AttemptsUsed > 0 ? "Повторить" : "Начать")
+                                                            </a>
+                                                        }
+                                                        else if (course.IsLocked)
+                                                        {
+                                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                                <i class="bi bi-lock me-1"></i>Курс заблокирован
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                                Недоступно
+                                                            </button>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // при открытии курса листаем к ближайшему невыполненному тесту
+            const courseCards = document.querySelectorAll('.course-card .card-header');
+
+            courseCards.forEach(header => {
+                header.addEventListener('click', function () {
+                    const targetId = header.getAttribute('data-bs-target');
+                    const collapseEl = document.querySelector(targetId);
+                    if (!collapseEl) return;
+
+                    // ждём окончания анимации раскрытия
+                    collapseEl.addEventListener('shown.bs.collapse', function handler() {
+                        collapseEl.removeEventListener('shown.bs.collapse', handler);
+
+                        const nearest = collapseEl.querySelector('tr.nearest-test');
+                        if (nearest) {
+                            const rect = nearest.getBoundingClientRect();
+                            const absoluteTop = rect.top + window.scrollY - 80; // небольшой отступ сверху
+                            window.scrollTo({ top: absoluteTop, behavior: 'smooth' });
+                        }
+                    }, { once: true });
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,131 @@
+@model List<TestStatisticsViewModel>
+@{
+    ViewData["Title"] = "Статистика тестов";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-graph-up me-2 text-primary"></i>Статистика тестов
+        </h2>
+        <p class="text-muted mb-0">Аналитика результатов студентов</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--primary-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Sum(t => t.UniqueStudents)</div>
+            <div class="label">Уникальных студентов</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--success-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Sum(t => t.TotalAttempts)</div>
+            <div class="label">Всего попыток</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--info-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Sum(t => t.PassedCount)</div>
+            <div class="label">Сдали</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--warning-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-percent"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">
+                @(Model.Any(t => t.UniqueStudents > 0) ? Math.Round(Model.Where(t => t.UniqueStudents > 0).Average(t => t.PassRate), 0) : 0)%
+            </div>
+            <div class="label">Средний % сдачи</div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-bar-chart display-1 text-muted mb-3"></i>
+            <h4>Статистика пока пуста</h4>
+            <p class="text-muted">Данные появятся после того, как студенты начнут проходить тесты</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th class="text-center">Студентов</th>
+                            <th class="text-center">Попыток</th>
+                            <th class="text-center">Средний балл</th>
+                            <th class="text-center">Макс / Мин</th>
+                            <th class="text-center">% сдачи</th>
+                            <th class="text-center">Ср. время</th>
+                            <th class="text-end"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var test in Model.OrderByDescending(t => t.TotalAttempts))
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-clipboard-check me-2 text-primary"></i>
+                                        <strong>@test.TestTitle</strong>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary">@test.UniqueStudents</span>
+                                </td>
+                                <td class="text-center">@test.TotalAttempts</td>
+                                <td class="text-center">
+                                    <span class="fw-medium">@Math.Round(test.AverageScore, 1)</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-success">@Math.Round(test.HighestScore, 1)</span>
+                                    /
+                                    <span class="text-danger">@Math.Round(test.LowestScore, 1)</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <div class="progress" style="width: 60px; height: 6px;">
+                                            <div class="progress-bar @(test.PassRate >= 70 ? "bg-success" : test.PassRate >= 40 ? "bg-warning" : "bg-danger")" 
+                                                 style="width: @test.PassRate%"></div>
+                                        </div>
+                                        <span>@Math.Round(test.PassRate, 0)%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center text-muted">
+                                    @Math.Round(test.AverageTimeMinutes, 1) мин
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="TestStatistics" asp-route-id="@test.TestId" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Подробнее
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,20 @@
+﻿@model StudentTestingSystem.Models.Entities.Group
+@{
+    ViewData["Title"] = "Изменить группу";
+    Layout = "_Layout";
+}
+
+<h2>Изменить группу</h2>
+
+<form asp-action="EditGroup" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a asp-action="Groups" class="btn btn-secondary">Отмена</a>
+</form>

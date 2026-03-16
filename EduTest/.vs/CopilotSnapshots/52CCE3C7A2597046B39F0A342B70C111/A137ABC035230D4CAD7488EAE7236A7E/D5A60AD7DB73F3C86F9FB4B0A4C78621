@@ -1,0 +1,31 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace StudentTestingSystem.Models.Entities;
+
+public class Test
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required]
+    public decimal MaxScore { get; set; }
+
+    [Required]
+    public int MaxAttempts { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [Required]
+    public int CourseId { get; set; }
+
+    [ForeignKey(nameof(CourseId))]
+    public virtual Course? Course { get; set; }
+
+    public virtual ICollection<TestElement> TestElements { get; set; } = new List<TestElement>();
+    public virtual ICollection<StudentResult> StudentResults { get; set; } = new List<StudentResult>();
+}

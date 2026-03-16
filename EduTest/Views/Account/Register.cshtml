@@ -1,0 +1,86 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Регистрация студента";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header text-center py-4" style="background: var(--primary-gradient);">
+                <i class="bi bi-person-plus display-4 text-white mb-2"></i>
+                <h4 class="text-white mb-0">Регистрация студента</h4>
+            </div>
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@ViewBag.Error
+                    </div>
+                }
+
+                <form asp-action="Register" method="post">
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label">
+                            <i class="bi bi-person me-1"></i>ФИО
+                        </label>
+                        <input asp-for="FullName" class="form-control form-control-lg" placeholder="Иванов Иван Иванович" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-7">
+                            <label asp-for="Email" class="form-label">
+                                <i class="bi bi-envelope me-1"></i>Email
+                            </label>
+                            <input asp-for="Email" class="form-control form-control-lg" placeholder="student@example.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="GroupId" class="form-label">
+                            <i class="bi bi-people-fill me-1"></i>Учебная группа (из списка)
+                        </label>
+                        <select asp-for="GroupId"
+                                asp-items="Model.Groups"
+                                class="form-control form-control-lg">
+                            <option value="">— выбрать группу —</option>
+                        </select>
+                        <span asp-validation-for="GroupId" class="text-danger small"></span>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label">
+                                <i class="bi bi-lock me-1"></i>Пароль
+                            </label>
+                            <input asp-for="Password" type="password" class="form-control form-control-lg" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label">
+                                <i class="bi bi-lock-fill me-1"></i>Подтверждение
+                            </label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                        </button>
+                    </div>
+                </form>
+
+                <hr />
+
+                <div class="text-center">
+                    <p class="mb-2">Уже есть аккаунт?</p>
+                    <a asp-action="Login" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

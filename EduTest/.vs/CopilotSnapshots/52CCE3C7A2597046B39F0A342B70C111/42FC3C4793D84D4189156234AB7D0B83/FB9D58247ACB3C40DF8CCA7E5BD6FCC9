@@ -1,0 +1,192 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using StudentTestingSystem.Data;
+using StudentTestingSystem.Models.Entities;
+using StudentTestingSystem.Models.ViewModels;
+using StudentTestingSystem.Services;
+
+namespace StudentTestingSystem.Controllers;
+
+[Authorize(Roles = "Student")]
+public class StudentController : Controller
+{
+    private readonly AppDbContext _context;
+    private readonly IGradingService _gradingService;
+
+    public StudentController(AppDbContext context, IGradingService gradingService)
+    {
+        _context = context;
+        _gradingService = gradingService;
+    }
+
+    private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    public async Task<IActionResult> Index()
+    {
+        var userId = GetUserId();
+        var user = await _context.Users.FindAsync(userId);
+
+        var courses = await _context.Courses
+            .Include(c => c.Tests)
+            .ThenInclude(t => t.StudentResults.Where(sr => sr.UserId == userId))
+            .ToListAsync();
+
+        var model = new StudentDashboardViewModel
+        {
+            StudentName = user?.FullName ?? "",
+            GroupNumber = user?.GroupNumber ?? "",
+            Courses = courses.Select(c => new CourseResultViewModel
+            {
+                CourseId = c.Id,
+                CourseTitle = c.Title,
+                MaxScore = c.Tests.Sum(t => t.MaxScore),
+                TotalScore = c.Tests.Sum(t => t.StudentResults.FirstOrDefault()?.Score ?? 0),
+                Tests = c.Tests.Select(t =>
+                {
+                    var result = t.StudentResults.FirstOrDefault();
+                    return new TestResultViewModel
+                    {
+                        TestId = t.Id,
+                        TestTitle = t.Title,
+                        MaxScore = t.MaxScore,
+                        Score = result?.Score ?? 0,
+                        AttemptsUsed = result?.AttemptsUsed ?? 0,
+                        MaxAttempts = t.MaxAttempts,
+                        IsCompleted = result?.IsCompleted ?? false,
+                        CanTake = (result?.AttemptsUsed ?? 0) < t.MaxAttempts
+                    };
+                }).ToList()
+            }).ToList()
+        };
+
+        model.TotalScore = model.Courses.Sum(c => c.TotalScore);
+        model.TotalMaxScore = model.Courses.Sum(c => c.MaxScore);
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TakeTest(int id)
+    {
+        var userId = GetUserId();
+
+        var test = await _context.Tests
+            .Include(t => t.Course)
+            .Include(t => t.TestElements.OrderBy(e => e.Order))
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (test == null)
+            return NotFound();
+
+        var existingResult = await _context.StudentResults
+            .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.TestId == id);
+
+        int attemptsUsed = existingResult?.AttemptsUsed ?? 0;
+
+        if (attemptsUsed >= test.MaxAttempts)
+        {
+            TempData["Error"] = "Вы исчерпали все попытки для этого теста";
+            return RedirectToAction("Index");
+        }
+
+        var model = new TakeTestViewModel
+        {
+            TestId = test.Id,
+            TestTitle = test.Title,
+            CourseName = test.Course?.Title ?? "",
+            MaxScore = test.MaxScore,
+            AttemptsLeft = test.MaxAttempts - attemptsUsed,
+            Questions = test.TestElements.Select(e => new QuestionViewModel
+            {
+                ElementId = e.Id,
+                Order = e.Order,
+                QuestionText = e.QuestionText,
+                IsDropdown = e.Type == ElementType.Dropdown,
+                Options = e.Type == ElementType.Dropdown && !string.IsNullOrEmpty(e.OptionsJson)
+                    ? e.OptionsJson.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(o => o.Trim()).ToList()
+                    : new List<string>()
+            }).ToList()
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SubmitTest(int testId, Dictionary<string, string> answers)
+    {
+        var userId = GetUserId();
+
+        var test = await _context.Tests
+            .Include(t => t.TestElements)
+            .FirstOrDefaultAsync(t => t.Id == testId);
+
+        if (test == null)
+            return NotFound();
+
+        var existingResult = await _context.StudentResults
+            .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.TestId == testId);
+
+        int attemptsUsed = existingResult?.AttemptsUsed ?? 0;
+
+        if (attemptsUsed >= test.MaxAttempts)
+        {
+            TempData["Error"] = "Вы исчерпали все попытки";
+            return RedirectToAction("Index");
+        }
+
+        var parsedAnswers = answers
+            .Where(a => a.Key.StartsWith("answer_"))
+            .ToDictionary(
+                a => int.Parse(a.Key.Replace("answer_", "")),
+                a => a.Value ?? ""
+            );
+
+        var (score, correctCount) = _gradingService.CalculateDetailedScore(test, parsedAnswers);
+
+        bool isNewBest = false;
+
+        if (existingResult == null)
+        {
+            existingResult = new StudentResult
+            {
+                UserId = userId,
+                TestId = testId,
+                Score = score,
+                AttemptsUsed = 1,
+                IsCompleted = true,
+                LastAttemptAt = DateTime.Now
+            };
+            _context.StudentResults.Add(existingResult);
+            isNewBest = true;
+        }
+        else
+        {
+            existingResult.AttemptsUsed++;
+            existingResult.LastAttemptAt = DateTime.Now;
+            existingResult.IsCompleted = true;
+
+            if (score > existingResult.Score)
+            {
+                existingResult.Score = score;
+                isNewBest = true;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        var resultModel = new TestResultSummaryViewModel
+        {
+            TestTitle = test.Title,
+            Score = score,
+            MaxScore = test.MaxScore,
+            CorrectAnswers = correctCount,
+            TotalQuestions = test.TestElements.Count,
+            IsNewBestScore = isNewBest
+        };
+
+        return View("TestResult", resultModel);
+    }
+}

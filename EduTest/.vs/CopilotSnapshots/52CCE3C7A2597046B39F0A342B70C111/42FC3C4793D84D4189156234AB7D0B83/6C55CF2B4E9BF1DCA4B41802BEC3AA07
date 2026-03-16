@@ -1,0 +1,45 @@
+﻿@model ForgotPasswordViewModel
+@{
+    ViewData["Title"] = "Восстановление пароля";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark text-center">
+                <h4 class="mb-0"><i class="bi bi-key me-2"></i>Восстановление пароля</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    После отправки заявки ваш аккаунт будет заблокирован до подтверждения преподавателем.
+                </div>
+
+                <form asp-action="ForgotPassword" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="GroupNumber" class="form-label"></label>
+                        <input asp-for="GroupNumber" class="form-control" placeholder="ИС-21" />
+                        <span asp-validation-for="GroupNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="student@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="bi bi-send me-2"></i>Отправить заявку
+                        </button>
+                        <a asp-action="Login" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Назад к входу
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

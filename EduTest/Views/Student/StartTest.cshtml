@@ -1,0 +1,87 @@
+@model TestAccessViewModel
+@{
+    ViewData["Title"] = "Начать тест";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white text-center py-4">
+                <i class="bi bi-clipboard-check display-4 mb-2"></i>
+                <h3 class="mb-0">@Model.TestTitle</h3>
+            </div>
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.Instructions))
+                {
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Инструкции</h6>
+                        <p class="mb-0">@Model.Instructions</p>
+                    </div>
+                }
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-card p-3">
+                            <i class="bi bi-question-circle text-primary fs-4"></i>
+                            <div class="value" style="font-size: 1.25rem;">@Model.QuestionsCount</div>
+                            <div class="label">Вопросов</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card p-3">
+                            <i class="bi bi-clock text-warning fs-4"></i>
+                            <div class="value" style="font-size: 1.25rem;">
+                                @(Model.TimeLimitMinutes > 0 ? $"{Model.TimeLimitMinutes} мин" : "?")
+                            </div>
+                            <div class="label">Время</div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card p-3">
+                            <i class="bi bi-arrow-repeat text-info fs-4"></i>
+                            <div class="value" style="font-size: 1.25rem;">@Model.AttemptsLeft</div>
+                            <div class="label">Осталось попыток</div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+                    </div>
+                }
+
+                <form asp-action="StartTest" method="post">
+                    <input type="hidden" asp-for="TestId" />
+                    
+                    @if (Model.RequiresPassword)
+                    {
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-lock me-1"></i>Пароль доступа
+                            </label>
+                            <input type="password" asp-for="EnteredPassword" class="form-control" 
+                                   placeholder="Введите пароль, выданный преподавателем" required />
+                        </div>
+                    }
+
+                    <div class="alert alert-warning mb-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> После начала теста таймер будет запущен 
+                        и попытка будет засчитана.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-play-fill me-2"></i>Начать тест
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Назад
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

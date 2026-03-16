@@ -1,0 +1,346 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using StudentTestingSystem.Data;
+using StudentTestingSystem.Models.Entities;
+using StudentTestingSystem.Models.ViewModels;
+
+namespace StudentTestingSystem.Controllers;
+
+[Authorize(Roles = "Teacher")]
+public class TeacherController : Controller
+{
+    private readonly AppDbContext _context;
+
+    public TeacherController(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IActionResult> Index()
+    {
+        var courses = await _context.Courses
+            .Include(c => c.Tests)
+            .Select(c => new CourseViewModel
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                TestsCount = c.Tests.Count,
+                TotalMaxScore = c.Tests.Sum(t => t.MaxScore)
+            })
+            .ToListAsync();
+
+        return View(courses);
+    }
+
+    #region Courses
+
+    [HttpGet]
+    public IActionResult CreateCourse()
+    {
+        return View(new CourseViewModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCourse(CourseViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var course = new Course
+        {
+            Title = model.Title,
+            Description = model.Description,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.Courses.Add(course);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Курс успешно создан";
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditCourse(int id)
+    {
+        var course = await _context.Courses.FindAsync(id);
+        if (course == null)
+            return NotFound();
+
+        var model = new CourseViewModel
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> EditCourse(CourseViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var course = await _context.Courses.FindAsync(model.Id);
+        if (course == null)
+            return NotFound();
+
+        course.Title = model.Title;
+        course.Description = model.Description;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Курс успешно обновлён";
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteCourse(int id)
+    {
+        var course = await _context.Courses
+            .Include(c => c.Tests)
+            .ThenInclude(t => t.TestElements)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (course == null)
+            return NotFound();
+
+        _context.Courses.Remove(course);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Курс удалён";
+        return RedirectToAction("Index");
+    }
+
+    #endregion
+
+    #region Tests
+
+    [HttpGet]
+    public async Task<IActionResult> CourseTests(int id)
+    {
+        var course = await _context.Courses
+            .Include(c => c.Tests)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (course == null)
+            return NotFound();
+
+        ViewBag.CourseName = course.Title;
+        ViewBag.CourseId = course.Id;
+
+        return View(course.Tests.ToList());
+    }
+
+    [HttpGet]
+    public IActionResult CreateTest(int courseId)
+    {
+        var model = new TestViewModel
+        {
+            CourseId = courseId,
+            MaxAttempts = 3,
+            MaxScore = 10,
+            Elements = new List<TestElementViewModel>()
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateTest(TestViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var test = new Test
+        {
+            Title = model.Title,
+            MaxScore = model.MaxScore,
+            MaxAttempts = model.MaxAttempts,
+            CourseId = model.CourseId,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.Tests.Add(test);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Тест создан. Добавьте вопросы.";
+        return RedirectToAction("EditTest", new { id = test.Id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditTest(int id)
+    {
+        var test = await _context.Tests
+            .Include(t => t.TestElements.OrderBy(e => e.Order))
+            .Include(t => t.Course)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (test == null)
+            return NotFound();
+
+        var model = new TestViewModel
+        {
+            Id = test.Id,
+            Title = test.Title,
+            MaxScore = test.MaxScore,
+            MaxAttempts = test.MaxAttempts,
+            CourseId = test.CourseId,
+            CourseName = test.Course?.Title,
+            Elements = test.TestElements.Select(e => new TestElementViewModel
+            {
+                Id = e.Id,
+                Type = e.Type,
+                QuestionText = e.QuestionText,
+                CorrectAnswer = e.CorrectAnswer,
+                Options = e.OptionsJson,
+                Order = e.Order
+            }).ToList()
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateTest(TestViewModel model)
+    {
+        var test = await _context.Tests.FindAsync(model.Id);
+        if (test == null)
+            return NotFound();
+
+        test.Title = model.Title;
+        test.MaxScore = model.MaxScore;
+        test.MaxAttempts = model.MaxAttempts;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Тест обновлён";
+        return RedirectToAction("EditTest", new { id = test.Id });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddElement(int testId, TestElementViewModel element)
+    {
+        var test = await _context.Tests
+            .Include(t => t.TestElements)
+            .FirstOrDefaultAsync(t => t.Id == testId);
+
+        if (test == null)
+            return NotFound();
+
+        var maxOrder = test.TestElements.Any() ? test.TestElements.Max(e => e.Order) : 0;
+
+        var newElement = new TestElement
+        {
+            TestId = testId,
+            Type = element.Type,
+            QuestionText = element.QuestionText,
+            CorrectAnswer = element.CorrectAnswer,
+            OptionsJson = element.Type == ElementType.Dropdown ? element.Options : null,
+            Order = maxOrder + 1
+        };
+
+        _context.TestElements.Add(newElement);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Вопрос добавлен";
+        return RedirectToAction("EditTest", new { id = testId });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteElement(int id)
+    {
+        var element = await _context.TestElements.FindAsync(id);
+        if (element == null)
+            return NotFound();
+
+        var testId = element.TestId;
+        _context.TestElements.Remove(element);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Вопрос удалён";
+        return RedirectToAction("EditTest", new { id = testId });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteTest(int id)
+    {
+        var test = await _context.Tests
+            .Include(t => t.TestElements)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (test == null)
+            return NotFound();
+
+        var courseId = test.CourseId;
+        _context.Tests.Remove(test);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Тест удалён";
+        return RedirectToAction("CourseTests", new { id = courseId });
+    }
+
+    #endregion
+
+    #region Password Reset Requests
+
+    [HttpGet]
+    public async Task<IActionResult> PasswordRequests()
+    {
+        var requests = await _context.PasswordResetRequests
+            .Include(r => r.User)
+            .Where(r => !r.IsProcessed)
+            .OrderByDescending(r => r.RequestedAt)
+            .ToListAsync();
+
+        return View(requests);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ApprovePasswordReset(int id, string newPassword)
+    {
+        var request = await _context.PasswordResetRequests
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (request == null || request.User == null)
+            return NotFound();
+
+        request.User.PasswordHash = BCryptHelper.HashPassword(newPassword);
+        request.User.IsBlocked = false;
+        request.IsProcessed = true;
+        request.ProcessedAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Пароль для {request.User.FullName} сброшен";
+        return RedirectToAction("PasswordRequests");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RejectPasswordReset(int id)
+    {
+        var request = await _context.PasswordResetRequests
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (request == null || request.User == null)
+            return NotFound();
+
+        request.User.IsBlocked = false;
+        request.IsProcessed = true;
+        request.ProcessedAt = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Заявка отклонена, аккаунт разблокирован";
+        return RedirectToAction("PasswordRequests");
+    }
+
+    #endregion
+}

@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="hero-section mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h1 class="display-4 fw-bold mb-3">
+                Добро пожаловать в EduTest
+            </h1>
+            <p class="lead opacity-75 mb-4">
+                Современная платформа для онлайн-тестирования и оценивания знаний студентов: 
+                интерактивные тесты, автопроверка, история и детальная статистика
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-4">
+                    <i class="bi bi-person-plus me-2"></i>Регистрация
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5 text-center d-none d-lg-block">
+            <i class="bi bi-mortarboard-fill" style="font-size: 12rem; opacity: 0.2;"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="stat-card h-100">
+            <div class="icon" style="background: var(--primary-gradient);">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h5 class="mb-3">9 типов вопросов</h5>
+            <p class="text-muted mb-0">
+                Текстовые поля, одиночный, множественный, сопоставление, упорядочивание и другие
+            </p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card h-100">
+            <div class="icon" style="background: var(--success-gradient);">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h5 class="mb-3">Лимиты времени</h5>
+            <p class="text-muted mb-0">
+                Ограничение времени на весь тест или на каждый вопрос отдельно
+            </p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card h-100">
+            <div class="icon" style="background: var(--info-gradient);">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5 class="mb-3">Детальная аналитика</h5>
+            <p class="text-muted mb-0">
+                Статистика по каждому вопросу, история попыток, средний результат
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-6">
+        <div class="card h-100 course-card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="stat-card p-3 me-3" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+                        <i class="bi bi-person-fill fs-2 text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-1">Для студентов</h3>
+                        <p class="text-muted mb-0">Проходите тесты и отслеживайте прогресс</p>
+                    </div>
+                </div>
+                <ul class="list-unstyled mb-4">
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Удобный интерфейс прохождения тестов
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Автоматическая проверка
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Подробный разбор ошибок
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        История всех попыток
+                    </li>
+                </ul>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти как студент
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus me-2"></i>Создать аккаунт
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card h-100 course-card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="stat-card p-3 me-3" style="background: linear-gradient(135deg, rgba(17, 153, 142, 0.1) 0%, rgba(56, 239, 125, 0.1) 100%);">
+                        <i class="bi bi-person-workspace fs-2 text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-1">Для преподавателей</h3>
+                        <p class="text-muted mb-0">Создавайте тесты и анализируйте результаты</p>
+                    </div>
+                </div>
+                <ul class="list-unstyled mb-4">
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Конструктор тестов с 9 типами вопросов
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Настройка лимитов и попыток
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Статистика по каждому студенту
+                    </li>
+                    <li class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Экспорт результатов в Excel
+                    </li>
+                </ul>
+                <div class="d-grid">
+                    <a asp-controller="Account" asp-action="TeacherLogin" class="btn btn-success btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти как преподаватель
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5">
+    <div class="card-body p-4">
+        <h4 class="mb-4 text-center">Типы поддерживаемых вопросов</h4>
+        <div class="row g-3">
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-primary text-white me-2">
+                        <i class="bi bi-input-cursor-text"></i>
+                    </span>
+                    <span>Текстовый ввод</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-info text-white me-2">
+                        <i class="bi bi-ui-radios"></i>
+                    </span>
+                    <span>Одиночный выбор</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-success text-white me-2">
+                        <i class="bi bi-ui-checks"></i>
+                    </span>
+                    <span>Множественный выбор</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-warning text-white me-2">
+                        <i class="bi bi-toggle-on"></i>
+                    </span>
+                    <span>Да / Нет</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-danger text-white me-2">
+                        <i class="bi bi-arrows"></i>
+                    </span>
+                    <span>Сопоставление</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge bg-secondary text-white me-2">
+                        <i class="bi bi-sort-numeric-down"></i>
+                    </span>
+                    <span>Упорядочивание</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge text-white me-2" style="background: #6f42c1;">
+                        <i class="bi bi-paragraph"></i>
+                    </span>
+                    <span>Заполнение пропусков</span>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="d-flex align-items-center p-3 rounded" style="background: #f8f9fa;">
+                    <span class="test-type-badge text-white me-2" style="background: #20c997;">
+                        <i class="bi bi-123"></i>
+                    </span>
+                    <span>Числовой диапазон</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center py-4">
+    <p class="text-muted mb-0">
+        <i class="bi bi-shield-check me-2"></i>
+        Безопасное тестирование с защитой данных и контролем сессии
+    </p>
+</div>

@@ -1,0 +1,45 @@
+﻿@model CourseViewModel
+@{
+    ViewData["Title"] = "Создание курса";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card">
+            <div class="card-header text-center py-4" style="background: var(--primary-gradient);">
+                <i class="bi bi-book display-4 text-white mb-2"></i>
+                <h4 class="text-white mb-0">Новый курс</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateCourse" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">
+                            <i class="bi bi-fonts me-1"></i>Название курса
+                        </label>
+                        <input asp-for="Title" class="form-control form-control-lg" 
+                               placeholder="Например: Информатика" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label">
+                            <i class="bi bi-text-paragraph me-1"></i>Описание (опционально)
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Краткое описание курса..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg me-2"></i>Создать курс
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

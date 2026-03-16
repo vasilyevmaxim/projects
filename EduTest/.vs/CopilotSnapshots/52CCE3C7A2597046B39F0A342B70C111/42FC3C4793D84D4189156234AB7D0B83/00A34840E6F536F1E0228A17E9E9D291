@@ -1,0 +1,70 @@
+﻿using System.ComponentModel.DataAnnotations;
+using StudentTestingSystem.Models.Entities;
+
+namespace StudentTestingSystem.Models.ViewModels;
+
+public class CourseViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Введите название курса")]
+    [MaxLength(200)]
+    [Display(Name = "Название курса")]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    [Display(Name = "Описание")]
+    public string? Description { get; set; }
+
+    public int TestsCount { get; set; }
+    public double TotalMaxScore { get; set; }
+}
+
+public class TestViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Введите название теста")]
+    [MaxLength(200)]
+    [Display(Name = "Название теста")]
+    public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Укажите максимальный балл")]
+    [Range(1, 1000, ErrorMessage = "Балл должен быть от 1 до 1000")]
+    [Display(Name = "Максимальный балл")]
+    public double MaxScore { get; set; }
+
+    [Required(ErrorMessage = "Укажите количество попыток")]
+    [Range(1, 100, ErrorMessage = "Попытки от 1 до 100")]
+    [Display(Name = "Количество попыток")]
+    public int MaxAttempts { get; set; }
+
+    public int CourseId { get; set; }
+    public string? CourseName { get; set; }
+
+    public List<TestElementViewModel> Elements { get; set; } = new();
+}
+
+public class TestElementViewModel
+{
+    public int Id { get; set; }
+
+    [Required(ErrorMessage = "Выберите тип вопроса")]
+    [Display(Name = "Тип вопроса")]
+    public ElementType Type { get; set; }
+
+    [Required(ErrorMessage = "Введите текст вопроса")]
+    [MaxLength(500)]
+    [Display(Name = "Текст вопроса")]
+    public string QuestionText { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Введите правильный ответ")]
+    [MaxLength(500)]
+    [Display(Name = "Правильный ответ")]
+    public string CorrectAnswer { get; set; } = string.Empty;
+
+    [Display(Name = "Варианты ответа (через запятую)")]
+    public string? Options { get; set; }
+
+    public int Order { get; set; }
+}

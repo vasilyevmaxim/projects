@@ -1,0 +1,802 @@
+@model TakeTestViewModel
+@{
+    ViewData["Title"] = Model.TestTitle;
+    Layout = "_Layout";
+}
+
+<div class="container-fluid py-3">
+    <form id="testForm" asp-action="SubmitTest" method="post">
+        <input type="hidden" name="testId" value="@Model.TestId" />
+        <input type="hidden" name="timeSpentSeconds" id="timeSpentSeconds" value="0" />
+        <input type="hidden" name="tabSwitchCount" id="tabSwitchCount" value="0" />
+
+        <div class="row">
+            <!-- Боковая панель -->
+            <div class="col-lg-3 mb-4">
+                <div class="card sticky-top" style="top: 1rem;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check me-2"></i>@Model.TestTitle
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.TimeLimitMinutes > 0)
+                        {
+                            <div class="mb-3 text-center">
+                                <div class="fs-4 fw-bold text-danger" id="timer">
+                                    <i class="bi bi-clock me-2"></i>
+                                    <span id="timerDisplay">@Model.TimeLimitMinutes:00</span>
+                                </div>
+                                <small class="text-muted">Осталось времени</small>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <small class="text-muted">Курс:</small>
+                            <div class="fw-medium">@Model.CourseName</div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Вопросов:</small>
+                                <div class="fw-medium">@Model.Questions.Count</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Макс. баллов:</small>
+                                <div class="fw-medium">@Model.MaxScore</div>
+                            </div>
+                        </div>
+
+                        @if (Model.PassingScorePercent > 0)
+                        {
+                            <div class="mb-3">
+                                <small class="text-muted">Проходной балл:</small>
+                                <div class="fw-medium">@Model.PassingScorePercent%</div>
+                            </div>
+                        }
+
+                        <hr />
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-2">Навигация по вопросам:</small>
+                            <div class="d-flex flex-wrap gap-1">
+                                @for (int i = 0; i < Model.Questions.Count; i++)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-secondary question-nav p-0 d-flex align-items-center justify-content-center" 
+                                            data-question="@i" style="width: 36px; height: 36px;">
+                                        @(i + 1)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg" 
+                                    onclick="return confirm('Вы уверены, что хотите завершить тест?')">
+                                <i class="bi bi-check-lg me-2"></i>Завершить тест
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вопросы -->
+            <div class="col-lg-9">
+                @for (int i = 0; i < Model.Questions.Count; i++)
+                {
+                    var question = Model.Questions[i];
+                    var radioId = $"radio_{question.ElementId}";
+                    var checkId = $"check_{question.ElementId}";
+                    <div class="card mb-4 question-card" id="question-@i" @(i > 0 ? "style=display:none;" : "")>
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-primary me-2">Вопрос @question.Order</span>
+                                <span class="badge @GetTypeBadge(question.Type)">@GetTypeName(question.Type)</span>
+                            </span>
+                            <span class="text-muted">@(i + 1) из @Model.Questions.Count</span>
+                        </div>
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(question.ImageUrl))
+                            {
+                                <div class="mb-3 text-center">
+                                    <img src="@question.ImageUrl" class="img-fluid rounded" style="max-height: 300px;" alt="Изображение к вопросу" />
+                                </div>
+                            }
+
+                            @if (question.Type != ElementType.FillBlanks)
+                            {
+                                <h5 class="mb-4">@Html.Raw(question.QuestionText)</h5>
+                            }
+
+                            @if (!string.IsNullOrEmpty(question.Hint))
+                            {
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-lightbulb me-2"></i>@question.Hint
+                                </div>
+                            }
+
+                            @switch (question.Type)
+                            {
+                                case ElementType.TextInput:
+                                    if (question.BlanksCount > 0 && !string.IsNullOrEmpty(question.FillBlanksText))
+                                    {
+                                        <div class="mb-3 lh-lg">
+                                            @{
+                                                var part = question.FillBlanksText.Split("[[BLANK]]", StringSplitOptions.None);
+                                                for (int k = 0; k < part.Length; k++)
+                                                {
+                                                    @Html.Raw(part[k])
+                                                    ;
+
+                                                    if (k < question.BlanksCount)
+                                                    {
+                                                        <input type="text"
+                                                               name="answers[@($"{question.ElementId}_{k}")]"
+                                                               class="form-control d-inline-block mx-1 answer-input"
+                                                               style="width: 180px; display: inline-block;"
+                                                               data-question="@i"
+                                                               placeholder="Ответ..." />
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mb-3">
+                                            <input type="text" name="answers[@question.ElementId]"
+                                                   class="form-control form-control-lg answer-input"
+                                                   data-question="@i"
+                                                   placeholder="Введите ваш ответ..." />
+                                        </div>
+                                    }
+                                    break;
+
+                                case ElementType.Dropdown:
+                                    <div class="mb-3">
+                                        <select name="answers[@question.ElementId]" 
+                                                class="form-select form-select-lg answer-input"
+                                                data-question="@i">
+                                            <option value="">-- Выберите ответ --</option>
+                                            @foreach (var option in question.Options)
+                                            {
+                                                <option value="@option">@option</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    break;
+
+                                case ElementType.RadioButton:
+                                    <div class="mb-3">
+                                        @{ var radioIndex = 0; }
+                                        @foreach (var option in question.Options)
+                                        {
+                                            var optionId = $"{radioId}_{radioIndex}";
+                                            <div class="form-check mb-2 p-3 border rounded option-item">
+                                                <input class="form-check-input answer-input" type="radio" 
+                                                       name="answers[@question.ElementId]" 
+                                                       value="@option" 
+                                                       data-question="@i"
+                                                       id="@optionId">
+                                                <label class="form-check-label w-100" for="@optionId">
+                                                    @option
+                                                </label>
+                                            </div>
+                                            radioIndex++;
+                                        }
+                                    </div>
+                                    break;
+
+                                case ElementType.Checkbox:
+                                    <div class="mb-3">
+                                        @{ var checkIndex = 0; }
+                                        @foreach (var option in question.Options)
+                                        {
+                                            var optionId = $"{checkId}_{checkIndex}";
+                                            <div class="form-check mb-2 p-3 border rounded option-item">
+                                                <input class="form-check-input answer-input" type="checkbox" 
+                                                       name="answers[multi_@(question.ElementId)_@checkIndex]"
+                                                       value="@option" 
+                                                       data-question="@i"
+                                                       id="@optionId">
+                                                <label class="form-check-label w-100" for="@optionId">
+                                                    @option
+                                                </label>
+                                            </div>
+                                            checkIndex++;
+                                        }
+                                    </div>
+                                    break;
+
+                                case ElementType.TrueFalse:
+                                    <div class="mb-3">
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <input class="btn-check answer-input" type="radio" 
+                                                       name="answers[@question.ElementId]" 
+                                                       value="Да" 
+                                                       data-question="@i"
+                                                       id="true_@question.ElementId" autocomplete="off">
+                                                <label class="btn btn-outline-success w-100 p-4 fs-4" for="true_@question.ElementId">
+                                                    <i class="bi bi-check-circle me-2"></i>Да
+                                                </label>
+                                            </div>
+                                            <div class="col-6">
+                                                <input class="btn-check answer-input" type="radio" 
+                                                       name="answers[@question.ElementId]" 
+                                                       value="Нет" 
+                                                       data-question="@i"
+                                                       id="false_@question.ElementId" autocomplete="off">
+                                                <label class="btn btn-outline-danger w-100 p-4 fs-4" for="false_@question.ElementId">
+                                                    <i class="bi bi-x-circle me-2"></i>Нет
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case ElementType.NumericRange:
+                                    <div class="mb-3">
+                                        <input type="number" name="answers[@question.ElementId]" 
+                                               class="form-control form-control-lg answer-input" 
+                                               data-question="@i"
+                                               step="any"
+                                               placeholder="Введите число..." />
+                                    </div>
+                                    break;
+
+                                case ElementType.FillBlanks:
+                                    <div class="mb-3 fill-blanks-container" data-question="@i">
+                                        <div class="alert alert-secondary mb-3">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Перетащите слова в пропуски или кликните по ним.
+                                        </div>
+
+                                        <div class="fill-blanks-text lh-lg">
+                                            @{
+                                                var text = question.QuestionText;
+                                                var parts = text.Split(new[] { "[[BLANK]]" }, StringSplitOptions.None);
+                                                for (int k = 0; k < parts.Length; k++)
+                                                {
+                                                    @Html.Raw(parts[k])
+                                                    if (k < parts.Length - 1)
+                                                    {
+                                                        <span class="blank-slot"
+                                                              data-question="@i"
+                                                              data-slot="@k"
+                                                              ondrop="drop(event)"
+                                                              ondragover="allowDrop(event)"></span>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-body bg-light word-bank p-3 rounded d-flex flex-wrap gap-2 justify-content-center" 
+                                                 id="word-bank-@i">
+                                                @foreach (var word in question.WordsForBlanks)
+                                                {
+                                                    <span class="badge bg-light text-dark border shadow-sm px-3 py-2 fs-5 word-item"
+                                                          draggable="true"
+                                                          data-word="@word"
+                                                          data-question="@i">
+                                                        @word
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <input type="hidden"
+                                               name="answers[@question.ElementId]"
+                                               id="answer-input-@i"
+                                               class="answer-input"
+                                               data-question="@i" />
+                                    </div>
+                                    break;
+
+                                case ElementType.Matching:
+                                    <div class="mb-3 matching-question" data-question="@i">
+                                        <div class="alert alert-secondary">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Перетащите элементы справа в соответствующие поля слева.
+                                        </div>
+
+                                        @{
+                                            // Левые и правые элементы уже приходят из модели
+                                            var leftItems = question.LeftItems;
+                                            // Правые элементы: запоминаем их «правильный» индекс и перемешиваем отображение
+                                            var rightItems = question.RightItems
+                                            .Select((text, idx) => new { Index = (idx + 1).ToString(), Text = text })
+                                            .OrderBy(_ => Guid.NewGuid())
+                                            .ToList();
+                                        }
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Левая колонка</h6>
+                                                @for (int j = 0; j < leftItems.Count; j++)
+                                                {
+                                                    <div class="match-slot mb-3 d-flex align-items-center"
+                                                         data-left-key="@(j + 1)">
+                                                        <div class="flex-grow-1">
+                                                            @leftItems[j]
+                                                        </div>
+                                                        <div class="match-dropzone border rounded p-2 bg-light ms-3"
+                                                             style="min-height: 40px; width: 40%;"></div>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Элементы для сопоставления</h6>
+                                                <div class="match-pool d-flex flex-wrap gap-2">
+                                                    @foreach (var r in rightItems)
+                                                    {
+                                                        <div class="match-item badge bg-secondary text-white"
+                                                             draggable="true"
+                                                             data-right-key="@r.Index">
+                                                            @r.Text
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <input type="hidden"
+                                               name="answers[@question.ElementId]"
+                                               class="answer-input matching-answer-hidden"
+                                               data-question="@i" />
+                                    </div>
+                                    break;
+
+                                case ElementType.Ordering:
+                                    <div class="mb-3">
+                                        <div class="alert alert-secondary">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Введите правильный порядок номеров через запятую: <code>1,3,2,4</code>
+                                        </div>
+                                        @if (question.ItemsToOrder.Any())
+                                        {
+                                            <div class="mb-3">
+                                                <h6>Элементы для упорядочивания:</h6>
+                                                <ul class="list-group">
+                                                    @for (int j = 0; j < question.ItemsToOrder.Count; j++)
+                                                    {
+                                                        <li class="list-group-item">
+                                                            <span class="badge bg-secondary me-2">@(j + 1)</span>
+                                                            @question.ItemsToOrder[j]
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                        <input type="text" name="answers[@question.ElementId]" 
+                                               class="form-control form-control-lg answer-input" 
+                                               data-question="@i"
+                                               placeholder="1,2,3,4..." />
+                                    </div>
+                                    break;
+                            }
+                        </div>
+                        <div class="card-footer bg-white d-flex justify-content-between">
+                            @if (i > 0)
+                            {
+                                <button type="button" class="btn btn-outline-secondary prev-btn" data-question="@i">
+                                    <i class="bi bi-arrow-left me-2"></i>Назад
+                                </button>
+                            }
+                            else
+                            {
+                                <div></div>
+                            }
+
+                            @if (i < Model.Questions.Count - 1)
+                            {
+                                <button type="button" class="btn btn-primary next-btn" data-question="@i">
+                                    Далее<i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-success" 
+                                        onclick="return confirm('Вы уверены, что хотите завершить тест?')">
+                                    <i class="bi bi-check-lg me-2"></i>Завершить тест
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const timeLimit = @Model.TimeLimitSeconds;
+        const detectTabSwitch = @(Model.DetectTabSwitch ? "true" : "false");
+        let timeLeftSeconds = timeLimit;
+        let startTime = new Date();
+        let tabSwitchCount = 0;
+        let currentQuestion = 0;
+
+        // Таймер
+        if (timeLimit > 0) {
+            const timerInterval = setInterval(function() {
+                timeLeftSeconds--;
+                updateTimerDisplay();
+                
+                if (timeLeftSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Время вышло! Тест будет автоматически отправлен.');
+                    document.getElementById('testForm').submit();
+                }
+                
+                // Предупреждение за 5 минут
+                if (timeLeftSeconds === 300) {
+                    alert('Осталось 5 минут!');
+                }
+                
+                // Предупреждение за 1 минуту
+                if (timeLeftSeconds === 60) {
+                    alert('Осталась 1 минута!');
+                }
+            }, 1000);
+            
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeftSeconds / 60);
+                const seconds = timeLeftSeconds % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    minutes + ':' + seconds.toString().padStart(2, '0');
+                
+                // Меняем цвет при малом времени
+                if (timeLeftSeconds <= 60) {
+                    document.getElementById('timer').classList.add('text-danger');
+                } else if (timeLeftSeconds <= 300) {
+                    document.getElementById('timer').classList.add('text-warning');
+                }
+            }
+        }
+
+        if (@Model.DisableCopyPaste.ToString().ToLower()) {
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && ['c','x','v','C','X','V'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('copy',  e => e.preventDefault());
+            document.addEventListener('cut',   e => e.preventDefault());
+            document.addEventListener('paste', e => e.preventDefault());
+            document.addEventListener('selectstart', e => e.preventDefault());
+        }
+
+        // Обнаружение переключения вкладок
+        if (detectTabSwitch) {
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    tabSwitchCount++;
+                    document.getElementById('tabSwitchCount').value = tabSwitchCount;
+                    if (tabSwitchCount >= 3) {
+                        alert('Внимание! Вы переключились с теста ' + tabSwitchCount + ' раз(а). Это может быть зафиксировано.');
+                    }
+                }
+            });
+        }
+
+        // Навигация по вопросам
+        function showQuestion(index) {
+            document.querySelectorAll('.question-card').forEach((card, i) => {
+                card.style.display = i === index ? 'block' : 'none';
+            });
+            currentQuestion = index;
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            document.querySelectorAll('.question-nav').forEach((btn, i) => {
+                btn.classList.remove('btn-primary', 'btn-success');
+                btn.classList.add('btn-outline-secondary');
+                
+                if (i === currentQuestion) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary');
+                }
+                
+                // Проверяем, есть ли ответ на вопрос
+                const inputs = document.querySelectorAll(`[data-question="${i}"]`);
+                let hasAnswer = false;
+                inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        if (input.checked) hasAnswer = true;
+                    } else if (input.value && input.value.trim() !== '') {
+                        hasAnswer = true;
+                    }
+                });
+                
+                if (hasAnswer && i !== currentQuestion) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success');
+                }
+            });
+        }
+
+        // Кнопки навигации
+        document.querySelectorAll('.question-nav').forEach(btn => {
+            btn.addEventListener('click', function() {
+                showQuestion(parseInt(this.dataset.question));
+            });
+        });
+
+        document.querySelectorAll('.next-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                showQuestion(parseInt(this.dataset.question) + 1);
+            });
+        });
+
+        document.querySelectorAll('.prev-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                showQuestion(parseInt(this.dataset.question) - 1);
+            });
+        });
+
+        // Обновляем время при отправке
+        document.getElementById('testForm').addEventListener('submit', function() {
+            const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+            document.getElementById('timeSpentSeconds').value = elapsedSeconds;
+            isSubmitting = true;
+        });
+
+        // Обновляем кнопки при вводе ответа
+        document.querySelectorAll('.answer-input').forEach(input => {
+            input.addEventListener('change', updateNavButtons);
+            input.addEventListener('input', updateNavButtons);
+        });
+
+        // Стиль для выбранных вариантов
+        document.querySelectorAll('.option-item input').forEach(input => {
+            input.addEventListener('change', function() {
+                const parent = this.closest('.option-item');
+                const allOptions = parent.parentElement.querySelectorAll('.option-item');
+                
+                if (this.type === 'radio') {
+                    allOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10'));
+                }
+                
+                if (this.checked) {
+                    parent.classList.add('border-primary', 'bg-primary', 'bg-opacity-10');
+                } else {
+                    parent.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10');
+                }
+            });
+        });
+
+        // ===== FILL BLANKS LOGIC =====
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.target.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.dataset.word);
+            ev.dataTransfer.setData("sourceId", ev.target.id); // If we want to hide the source
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            ev.target.classList.remove('drag-over');
+            var data = ev.dataTransfer.getData("text");
+            
+            if (data) {
+                fillSlot(ev.target, data);
+            }
+        }
+
+        // Handle drag leave to remove style
+        document.addEventListener('dragleave', function(e) {
+            if (e.target.classList.contains('blank-slot')) {
+                e.target.classList.remove('drag-over');
+            }
+        });
+
+        // Click on word in bank -> move to first empty slot
+        document.querySelectorAll('.word-item').forEach(item => {
+            item.addEventListener('dragstart', drag);
+            
+            item.addEventListener('click', function() {
+                if (this.classList.contains('used')) return;
+                
+                const questionIndex = this.dataset.question;
+                const container = document.querySelector(`.fill-blanks-container[data-question="${questionIndex}"]`);
+                const emptySlot = container.querySelector('.blank-slot:not(.filled)');
+                
+                if (emptySlot) {
+                    fillSlot(emptySlot, this.dataset.word);
+                }
+            });
+        });
+
+        // Click on filled slot -> clear it
+        document.querySelectorAll('.blank-slot').forEach(slot => {
+            slot.addEventListener('click', function() {
+                if (this.classList.contains('filled')) {
+                    const word = this.textContent;
+                    this.textContent = '';
+                    this.classList.remove('filled');
+                    
+                    // Enable word in bank
+                    const questionIndex = this.dataset.question;
+                    const bank = document.getElementById(`word-bank-${questionIndex}`);
+                    const wordItem = Array.from(bank.querySelectorAll('.word-item')).find(w => 
+                        w.dataset.word === word && w.classList.contains('used')
+                    );
+                    
+                    if (wordItem) {
+                        wordItem.classList.remove('used');
+                    }
+                    
+                    updateFillBlanksAnswer(questionIndex);
+                }
+            });
+        });
+
+        function fillSlot(slot, word) {
+            const questionIndex = slot.dataset.question;
+            
+            // If slot was already filled, return old word to bank
+            if (slot.classList.contains('filled')) {
+                const oldWord = slot.textContent;
+                const bank = document.getElementById(`word-bank-${questionIndex}`);
+                const oldWordItem = Array.from(bank.querySelectorAll('.word-item')).find(w => 
+                    w.dataset.word === oldWord && w.classList.contains('used')
+                );
+                if (oldWordItem) oldWordItem.classList.remove('used');
+            }
+
+            // Fill slot
+            slot.textContent = word;
+            slot.classList.add('filled');
+
+            // Mark word as used in bank
+            const bank = document.getElementById(`word-bank-${questionIndex}`);
+            // Find a word item that matches and is NOT used (to handle duplicate words correctly)
+            let wordItem = Array.from(bank.querySelectorAll('.word-item')).find(w => 
+                w.dataset.word === word && !w.classList.contains('used')
+            );
+            
+            // If all instances are used, just pick one (visual glitch but logic holds)
+            if (!wordItem) {
+                 wordItem = Array.from(bank.querySelectorAll('.word-item')).find(w => w.dataset.word === word);
+            }
+
+            if (wordItem) {
+                wordItem.classList.add('used');
+            }
+
+            updateFillBlanksAnswer(questionIndex);
+        }
+
+        function updateFillBlanksAnswer(questionIndex) {
+            const container = document.querySelector(`.fill-blanks-container[data-question="${questionIndex}"]`);
+            const slots = Array.from(container.querySelectorAll('.blank-slot'));
+            
+            // Join with | and use '-' for empty slots to preserve position
+            const answer = slots.map(s => s.classList.contains('filled') ? s.textContent : '-').join('|');
+            
+            const input = document.getElementById(`answer-input-${questionIndex}`);
+            input.value = answer;
+            
+            // Trigger change event for navigation buttons update
+            const event = new Event('change');
+            input.dispatchEvent(event);
+        }
+
+        // ===== MATCHING LOGIC =====
+        document.addEventListener('dragstart', function (e) {
+            const item = e.target.closest('.match-item');
+            if (!item) return;
+
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', item.dataset.rightKey);
+        });
+
+        document.addEventListener('dragover', function (e) {
+            if (e.target.closest('.match-dropzone')) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('drop', function (e) {
+            const zone = e.target.closest('.match-dropzone');
+            if (!zone) return;
+
+            e.preventDefault();
+
+            const rightKey = e.dataTransfer.getData('text/plain');
+            if (!rightKey) return;
+
+            const container = zone.closest('.matching-question');
+            if (!container) return;
+
+            const item = container.querySelector('.match-item[data-right-key="' + rightKey + '"]');
+            if (!item) return;
+
+            // Если в этой зоне уже что-то лежит — вернуть его в пул
+            const existing = zone.querySelector('.match-item');
+            if (existing) {
+                const pool = container.querySelector('.match-pool');
+                pool.appendChild(existing);
+            }
+
+            zone.appendChild(item);
+
+            updateMatchingAnswer(container);
+        });
+
+        function updateMatchingAnswer(container) {
+            const questionIndex = container.dataset.question;
+            const slots = container.querySelectorAll('.match-slot');
+            const pairs = [];
+
+            slots.forEach(slot => {
+                const leftKey = slot.dataset.leftKey; // 1..N
+                const dropped = slot.querySelector('.match-dropzone .match-item');
+                const rightKey = dropped ? dropped.dataset.rightKey : ''; // 1..N или ""
+                pairs.push(leftKey + '=' + rightKey);
+            });
+
+            const hidden = container.querySelector('.matching-answer-hidden');
+            if (hidden) {
+                hidden.value = pairs.join('|'); // пример: "1=2|2=1|3="
+                // Чтобы обновлялась навигация по вопросам
+                const event = new Event('change');
+                hidden.dispatchEvent(event);
+            }
+        }
+        // Инициализация
+        updateNavButtons();
+
+        let isSubmitting = false;
+        // Предупреждение при закрытии страницы
+        window.addEventListener('beforeunload', function (e) {
+            if (isSubmitting) return; // при отправке теста не показываем предупреждение
+
+            e.preventDefault();
+            e.returnValue = '';
+        });
+    </script>
+}
+
+@functions {
+    string GetTypeBadge(ElementType type) => type switch
+    {
+        ElementType.TextInput => "bg-secondary",
+        ElementType.Dropdown => "bg-info",
+        ElementType.RadioButton => "bg-info",
+        ElementType.Checkbox => "bg-success",
+        ElementType.TrueFalse => "bg-warning text-dark",
+        ElementType.Matching => "bg-danger",
+        ElementType.Ordering => "bg-dark",
+        ElementType.FillBlanks => "bg-primary",
+        ElementType.NumericRange => "bg-secondary",
+        _ => "bg-secondary"
+    };
+
+    string GetTypeName(ElementType type) => type switch
+    {
+        ElementType.TextInput => "Текстовый ввод",
+        ElementType.Dropdown => "Выбор из списка",
+        ElementType.RadioButton => "Один ответ",
+        ElementType.Checkbox => "Несколько ответов",
+        ElementType.TrueFalse => "Да/Нет",
+        ElementType.Matching => "Сопоставление",
+        ElementType.Ordering => "Упорядочивание",
+        ElementType.FillBlanks => "Заполнение пропусков",
+        ElementType.NumericRange => "Числовой ответ",
+        _ => "Вопрос"
+    };
+}

@@ -1,0 +1,168 @@
+﻿@model TestViewModel
+@{
+    ViewData["Title"] = $"Редактирование теста: {Model.Title}";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Курсы</a></li>
+        <li class="breadcrumb-item"><a asp-action="CourseTests" asp-route-id="@Model.CourseId">@Model.CourseName</a></li>
+        <li class="breadcrumb-item active">@Model.Title</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Настройки теста</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateTest" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="CourseId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="MaxScore" class="form-label"></label>
+                        <div class="input-group">
+                            <input asp-for="MaxScore" class="form-control" />
+                            <span class="input-group-text">баллов</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="MaxAttempts" class="form-label"></label>
+                        <div class="input-group">
+                            <input asp-for="MaxAttempts" class="form-control" />
+                            <span class="input-group-text">попыток</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-lg me-2"></i>Сохранить настройки
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-lg me-2"></i>Добавить вопрос</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddElement" asp-route-testId="@Model.Id" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Тип вопроса</label>
+                        <select name="element.Type" class="form-select" id="elementType" onchange="toggleOptions()">
+                            <option value="0">Поле ввода</option>
+                            <option value="1">Выпадающий список</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Текст вопроса</label>
+                        <textarea name="element.QuestionText" class="form-control" rows="2" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Правильный ответ</label>
+                        <input name="element.CorrectAnswer" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3" id="optionsGroup" style="display: none;">
+                        <label class="form-label">Варианты ответа</label>
+                        <input name="element.Options" class="form-control" placeholder="Вариант1, Вариант2, Вариант3" />
+                        <div class="form-text">Через запятую, включая правильный ответ</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-plus-lg me-2"></i>Добавить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ol me-2"></i>Вопросы теста
+                    <span class="badge bg-primary ms-2">@Model.Elements.Count</span>
+                </h5>
+                @if (Model.Elements.Any())
+                {
+                    <span class="text-muted">
+                        По @(Math.Round(Model.MaxScore / Model.Elements.Count, 2)) балла за вопрос
+                    </span>
+                }
+            </div>
+            <div class="card-body">
+                @if (!Model.Elements.Any())
+                {
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Вопросы пока не добавлены. Используйте форму слева.
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group">
+                        @foreach (var element in Model.Elements.OrderBy(e => e.Order))
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="badge bg-secondary me-2">@element.Order</span>
+                                            @if (element.Type == ElementType.TextInput)
+                                            {
+                                                <span class="badge bg-info"><i class="bi bi-input-cursor-text me-1"></i>Поле ввода</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark"><i class="bi bi-menu-down me-1"></i>Список</span>
+                                            }
+                                        </div>
+                                        <p class="mb-1"><strong>@element.QuestionText</strong></p>
+                                        <small class="text-success">
+                                            <i class="bi bi-check-circle me-1"></i>Ответ: @element.CorrectAnswer
+                                        </small>
+                                        @if (element.Type == ElementType.Dropdown && !string.IsNullOrEmpty(element.Options))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="bi bi-list me-1"></i>Варианты: @element.Options
+                                            </small>
+                                        }
+                                    </div>
+                                    <form asp-action="DeleteElement" asp-route-id="@element.Id" method="post"
+                                          onsubmit="return confirm('Удалить вопрос?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleOptions() {
+            var type = document.getElementById('elementType').value;
+            var optionsGroup = document.getElementById('optionsGroup');
+            optionsGroup.style.display = type === '1' ? 'block' : 'none';
+        }
+    </script>
+}

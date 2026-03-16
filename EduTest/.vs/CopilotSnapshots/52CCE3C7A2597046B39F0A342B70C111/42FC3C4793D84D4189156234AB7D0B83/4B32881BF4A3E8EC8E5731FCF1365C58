@@ -1,0 +1,101 @@
+﻿@model TakeTestViewModel
+@{
+    ViewData["Title"] = $"Тест: {Model.TestTitle}";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Мои результаты</a></li>
+        <li class="breadcrumb-item">@Model.CourseName</li>
+        <li class="breadcrumb-item active">@Model.TestTitle</li>
+    </ol>
+</nav>
+
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+            <i class="bi bi-clipboard-check me-2"></i>@Model.TestTitle
+        </h4>
+        <div>
+            <span class="badge bg-light text-dark me-2">
+                <i class="bi bi-star me-1"></i>Макс. @Model.MaxScore баллов
+            </span>
+            <span class="badge bg-warning text-dark">
+                <i class="bi bi-arrow-repeat me-1"></i>Осталось @Model.AttemptsLeft попыток
+            </span>
+        </div>
+    </div>
+</div>
+
+<form asp-action="SubmitTest" method="post" id="testForm">
+    <input type="hidden" name="testId" value="@Model.TestId" />
+
+    @foreach (var question in Model.Questions)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-2">@question.Order</span>
+                    <strong>@question.QuestionText</strong>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (question.IsDropdown)
+                {
+                    <select name="answers[answer_@question.ElementId]" class="form-select" required>
+                        <option value="">— Выберите ответ —</option>
+                        @foreach (var option in question.Options)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <input type="text" name="answers[answer_@question.ElementId]" 
+                           class="form-control" placeholder="Введите ваш ответ" required />
+                }
+            </div>
+        </div>
+    }
+
+    <div class="card bg-light">
+        <div class="card-body text-center">
+            <p class="text-muted mb-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                После нажатия кнопки "Завершить тест" ответы изменить будет нельзя.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Отмена
+                </a>
+                <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                    <i class="bi bi-check-lg me-2"></i>Завершить тест
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Подтверждение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите завершить тест?</p>
+                    <p class="text-muted">
+                        После подтверждения ваши ответы будут отправлены и попытка будет засчитана.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Вернуться к тесту</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg me-2"></i>Да, завершить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

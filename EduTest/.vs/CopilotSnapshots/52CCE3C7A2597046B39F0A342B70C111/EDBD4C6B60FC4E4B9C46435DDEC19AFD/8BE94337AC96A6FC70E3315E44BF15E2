@@ -1,0 +1,77 @@
+﻿@model TestResultSummaryViewModel
+@{
+    ViewData["Title"] = "Результат теста";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow text-center">
+            <div class="card-header @(Model.IsNewBestScore ? "bg-success" : "bg-primary") text-white">
+                <h3 class="mb-0">
+                    @if (Model.IsNewBestScore)
+                    {
+                        <i class="bi bi-trophy me-2"></i>@:Новый лучший результат!
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-circle me-2"></i>@:Тест завершён
+                    }
+                </h3>
+            </div>
+            <div class="card-body py-5">
+                <h4 class="text-muted mb-4">@Model.TestTitle</h4>
+
+                <div class="display-1 fw-bold text-primary mb-3">
+                    @Model.Score / @Model.MaxScore
+                </div>
+                <p class="text-muted mb-4">баллов</p>
+
+                @{
+                    var percent = Model.MaxScore > 0 ? (Model.Score / Model.MaxScore * 100) : 0;
+                    var progressClass = percent >= 80 ? "bg-success" : percent >= 50 ? "bg-warning" : "bg-danger";
+                }
+
+                <div class="progress mb-4" style="height: 25px;">
+                    <div class="progress-bar @progressClass" role="progressbar" 
+                         style="width: @percent%">
+                        @Math.Round(percent, 0)%
+                    </div>
+                </div>
+
+                <div class="row text-center mb-4">
+                    <div class="col-6">
+                        <div class="border rounded p-3">
+                            <div class="display-6 text-success">@Model.CorrectAnswers</div>
+                            <small class="text-muted">Правильных ответов</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-3">
+                            <div class="display-6 text-secondary">@Model.TotalQuestions</div>
+                            <small class="text-muted">Всего вопросов</small>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.IsNewBestScore)
+                {
+                    <div class="alert alert-success">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Поздравляем! Это ваш лучший результат по данному тесту.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        В вашей статистике сохранён лучший результат.
+                    </div>
+                }
+
+                <a asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="bi bi-house me-2"></i>Вернуться к результатам
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

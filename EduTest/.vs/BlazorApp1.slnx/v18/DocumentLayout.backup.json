@@ -1,0 +1,171 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\views\\account\\teacherlogin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:views\\account\\teacherlogin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\migrations\\appdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:migrations\\appdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\migrations\\20251212115905_addsuspiciousflagstoattempts.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:migrations\\20251212115905_addsuspiciousflagstoattempts.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\migrations\\20251212115905_addsuspiciousflagstoattempts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:migrations\\20251212115905_addsuspiciousflagstoattempts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|c:\\users\\vasilyev\\desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\blazorapp1\\views\\teacher\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{49BA0810-CF63-BACD-9969-F34D5336499D}|BlazorApp1.csproj|solutionrelative:views\\teacher\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "bootstrap-reboot.css",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+              "RelativeDocumentMoniker": "wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+              "RelativeToolTip": "wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+              "ViewState": "AgIAAOUBAAAAAAAAAAAiwCgCAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-01-23T11:28:21.451Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Services\\AuthService.cs",
+              "RelativeToolTip": "Services\\AuthService.cs",
+              "ViewState": "AgIAAFwAAAAAAAAAAAApwHkAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T11:27:35.933Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TeacherLogin.cshtml",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Views\\Account\\TeacherLogin.cshtml",
+              "RelativeDocumentMoniker": "Views\\Account\\TeacherLogin.cshtml",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Views\\Account\\TeacherLogin.cshtml",
+              "RelativeToolTip": "Views\\Account\\TeacherLogin.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-23T10:54:51.364Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AppDbContextModelSnapshot.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\AppDbContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "Migrations\\AppDbContextModelSnapshot.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\AppDbContextModelSnapshot.cs",
+              "RelativeToolTip": "Migrations\\AppDbContextModelSnapshot.cs",
+              "ViewState": "AgIAAHEBAAAAAAAAAIAwwI8BAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T10:54:49.571Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "Data\\AppDbContext.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAQwDEAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T10:54:45.547Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "20251212115905_AddSuspiciousFlagsToAttempts.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.Designer.cs",
+              "RelativeDocumentMoniker": "Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.Designer.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.Designer.cs",
+              "RelativeToolTip": "Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.Designer.cs",
+              "ViewState": "AgIAAGoBAAAAAAAAAAAAAHwBAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T10:54:38.638Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "20251212115905_AddSuspiciousFlagsToAttempts.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.cs",
+              "RelativeDocumentMoniker": "Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.cs",
+              "RelativeToolTip": "Migrations\\20251212115905_AddSuspiciousFlagsToAttempts.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAIAwwHQAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T10:54:14.208Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Views\\Teacher\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Teacher\\Index.cshtml",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Views\\Teacher\\Index.cshtml",
+              "RelativeToolTip": "Views\\Teacher\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-23T10:53:01.029Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\vasilyev\\Desktop\\\u0431\u043B\u0435\u0439\u0437\u0440\\BlazorApp1\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "Controllers\\AccountController.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAhwDcAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-23T10:52:38.519Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

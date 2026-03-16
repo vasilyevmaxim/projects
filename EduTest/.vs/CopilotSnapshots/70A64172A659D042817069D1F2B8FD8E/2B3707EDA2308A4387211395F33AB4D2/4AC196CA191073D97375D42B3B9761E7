@@ -1,0 +1,123 @@
+﻿@model List<CourseViewModel>
+@{
+    ViewData["Title"] = "Управление курсами";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-journal-text me-2 text-primary"></i>Курсы и тесты
+        </h2>
+        <p class="text-muted mb-0">Управление образовательным контентом</p>
+    </div>
+    <a asp-action="CreateCourse" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-lg me-2"></i>Создать курс
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--primary-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-book"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Count</div>
+            <div class="label">Курсов</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--success-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-clipboard-check"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Sum(c => c.TestsCount)</div>
+            <div class="label">Тестов</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="icon" style="background: var(--info-gradient); width: 50px; height: 50px; font-size: 1.25rem;">
+                <i class="bi bi-star"></i>
+            </div>
+            <div class="value" style="font-size: 1.5rem;">@Model.Sum(c => c.TotalMaxScore)</div>
+            <div class="label">Макс. баллов</div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+            <h4>Курсы пока не созданы</h4>
+            <p class="text-muted mb-4">Создайте первый курс для начала работы</p>
+            <a asp-action="CreateCourse" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-lg me-2"></i>Создать курс
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var course in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 course-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div style="width: 50px; height: 50px; background: var(--primary-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-book text-white fs-4"></i>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical fs-5"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-action="EditCourse" asp-route-id="@course.Id">
+                                            <i class="bi bi-pencil me-2"></i>Редактировать
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-action="DeleteCourse" asp-route-id="@course.Id" method="post" 
+                                              onsubmit="return confirm('Удалить курс и все тесты?')">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash me-2"></i>Удалить
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h5 class="card-title mb-2">@course.Title</h5>
+                        
+                        @if (!string.IsNullOrEmpty(course.Description))
+                        {
+                            <p class="text-muted small mb-3">
+                                @(course.Description.Length > 100 ? course.Description.Substring(0, 100) + "..." : course.Description)
+                            </p>
+                        }
+
+                        <div class="d-flex gap-2 mb-3">
+                            <span class="badge bg-primary">
+                                <i class="bi bi-clipboard-check me-1"></i>@course.TestsCount тестов
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="bi bi-star me-1"></i>@course.TotalMaxScore баллов
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <a asp-action="CourseTests" asp-route-id="@course.Id" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-folder-open me-2"></i>Открыть тесты
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

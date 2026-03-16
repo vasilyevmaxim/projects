@@ -1,0 +1,68 @@
+﻿using Microsoft.EntityFrameworkCore;
+using StudentTestingSystem.Models.Entities;
+
+namespace StudentTestingSystem.Data;
+
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<User> Users { get; set; }
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<Test> Tests { get; set; }
+    public DbSet<TestElement> TestElements { get; set; }
+    public DbSet<StudentResult> StudentResults { get; set; }
+    public DbSet<TestAttempt> TestAttempts { get; set; }
+    public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.GroupNumber);
+
+        modelBuilder.Entity<StudentResult>()
+            .HasIndex(sr => new { sr.UserId, sr.TestId })
+            .IsUnique();
+
+        modelBuilder.Entity<TestElement>()
+            .HasIndex(te => new { te.TestId, te.Order });
+
+        modelBuilder.Entity<TestAttempt>()
+            .HasIndex(ta => new { ta.StudentResultId, ta.AttemptNumber });
+
+        // Seed data: создаём преподавателя по умолчанию
+        modelBuilder.Entity<User>().HasData(new User
+        {
+            Id = 1,
+            FullName = "Администратор",
+            Email = "admin@test.ru",
+            PasswordHash = BCryptHelper.HashPassword("admin123"),
+            Role = UserRole.Teacher,
+            IsBlocked = false
+        });
+    }
+}
+
+public static class BCryptHelper
+{
+    public static string HashPassword(string password)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+        var hash = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
+    public static bool VerifyPassword(string password, string hash)
+    {
+        return HashPassword(password) == hash;
+    }
+}

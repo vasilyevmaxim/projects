@@ -1,0 +1,101 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace StudentTestingSystem.Models.Entities;
+
+public class Test
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string? Description { get; set; }
+
+    [Required]
+    public double MaxScore { get; set; }
+
+    [Required]
+    public int MaxAttempts { get; set; }
+
+    /// <summary>
+    /// Время на весь тест в минутах (0 = без ограничения)
+    /// </summary>
+    public int TimeLimitMinutes { get; set; } = 0;
+
+    /// <summary>
+    /// Перемешивать вопросы при каждой попытке
+    /// </summary>
+    public bool ShuffleQuestions { get; set; } = false;
+
+    /// <summary>
+    /// Перемешивать варианты ответов
+    /// </summary>
+    public bool ShuffleAnswers { get; set; } = false;
+
+    /// <summary>
+    /// Показывать по одному вопросу (пагинация)
+    /// </summary>
+    public bool OneQuestionPerPage { get; set; } = false;
+
+    /// <summary>
+    /// Запретить возврат к предыдущим вопросам
+    /// </summary>
+    public bool PreventBackNavigation { get; set; } = false;
+
+    /// <summary>
+    /// Проходной балл в процентах (0 = не используется)
+    /// </summary>
+    public int PassingScorePercent { get; set; } = 0;
+
+    /// <summary>
+    /// Показывать правильные ответы после теста
+    /// </summary>
+    public bool ShowCorrectAnswers { get; set; } = true;
+
+    /// <summary>
+    /// Показывать результат сразу после теста
+    /// </summary>
+    public bool ShowResultImmediately { get; set; } = true;
+
+    /// <summary>
+    /// Дата начала доступности теста
+    /// </summary>
+    public DateTime? AvailableFrom { get; set; }
+
+    /// <summary>
+    /// Дата окончания доступности теста
+    /// </summary>
+    public DateTime? AvailableUntil { get; set; }
+
+    /// <summary>
+    /// Пароль для доступа к тесту
+    /// </summary>
+    [MaxLength(50)]
+    public string? AccessPassword { get; set; }
+
+    /// <summary>
+    /// Предупреждать при переключении вкладки браузера
+    /// </summary>
+    public bool DetectTabSwitch { get; set; } = false;
+
+    /// <summary>
+    /// Инструкции перед началом теста
+    /// </summary>
+    [MaxLength(2000)]
+    public string? Instructions { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [Required]
+    public int CourseId { get; set; }
+
+    [ForeignKey(nameof(CourseId))]
+    public virtual Course? Course { get; set; }
+
+    public virtual ICollection<TestElement> TestElements { get; set; } = new List<TestElement>();
+    public virtual ICollection<StudentResult> StudentResults { get; set; } = new List<StudentResult>();
+}

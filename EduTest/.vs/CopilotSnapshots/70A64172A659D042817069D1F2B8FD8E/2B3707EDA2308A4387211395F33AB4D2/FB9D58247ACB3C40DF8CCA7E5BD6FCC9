@@ -1,0 +1,480 @@
+﻿using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using StudentTestingSystem.Data;
+using StudentTestingSystem.Models.Entities;
+using StudentTestingSystem.Models.ViewModels;
+using StudentTestingSystem.Services;
+
+namespace StudentTestingSystem.Controllers;
+
+[Authorize(Roles = "Student")]
+public class StudentController : Controller
+{
+    private readonly AppDbContext _context;
+    private readonly IGradingService _gradingService;
+
+    public StudentController(AppDbContext context, IGradingService gradingService)
+    {
+        _context = context;
+        _gradingService = gradingService;
+    }
+
+    private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    public async Task<IActionResult> Index()
+    {
+        var userId = GetUserId();
+        var user = await _context.Users.FindAsync(userId);
+
+        var courses = await _context.Courses
+            .Include(c => c.Tests)
+                .ThenInclude(t => t.TestElements)
+            .Include(c => c.Tests)
+                .ThenInclude(t => t.StudentResults.Where(sr => sr.UserId == userId))
+            .ToListAsync();
+
+        var now = DateTime.Now;
+
+        var model = new StudentDashboardViewModel
+        {
+            StudentName = user?.FullName ?? "",
+            GroupNumber = user?.GroupNumber ?? "",
+            Courses = courses.Select(c => new CourseResultViewModel
+            {
+                CourseId = c.Id,
+                CourseTitle = c.Title,
+                CourseDescription = c.Description,
+                MaxScore = c.Tests.Sum(t => t.MaxScore),
+                TotalScore = c.Tests.Sum(t => t.StudentResults.FirstOrDefault()?.BestScore ?? 0),
+                Tests = c.Tests.Select(t =>
+                {
+                    var result = t.StudentResults.FirstOrDefault();
+                    var isAvailable = (!t.AvailableFrom.HasValue || t.AvailableFrom <= now) &&
+                                      (!t.AvailableUntil.HasValue || t.AvailableUntil >= now);
+                    var canTake = isAvailable && (result?.AttemptsUsed ?? 0) < t.MaxAttempts;
+                    
+                    return new TestResultViewModel
+                    {
+                        TestId = t.Id,
+                        TestTitle = t.Title,
+                        TestDescription = t.Description,
+                        MaxScore = t.MaxScore,
+                        BestScore = result?.BestScore ?? 0,
+                        LastScore = result?.LastScore ?? 0,
+                        AttemptsUsed = result?.AttemptsUsed ?? 0,
+                        MaxAttempts = t.MaxAttempts,
+                        IsCompleted = result?.IsCompleted ?? false,
+                        IsPassed = result?.IsPassed ?? false,
+                        CanTake = canTake,
+                        TimeLimitMinutes = t.TimeLimitMinutes,
+                        PassingScorePercent = t.PassingScorePercent,
+                        AvailableFrom = t.AvailableFrom,
+                        AvailableUntil = t.AvailableUntil,
+                        IsAvailable = isAvailable,
+                        RequiresPassword = !string.IsNullOrEmpty(t.AccessPassword),
+                        QuestionsCount = t.TestElements.Count
+                    };
+                }).ToList()
+            }).ToList()
+        };
+
+        model.TotalScore = model.Courses.Sum(c => c.TotalScore);
+        model.TotalMaxScore = model.Courses.Sum(c => c.MaxScore);
+        model.CompletedTests = model.Courses.SelectMany(c => c.Tests).Count(t => t.IsCompleted);
+        model.TotalTests = model.Courses.SelectMany(c => c.Tests).Count();
+        model.PassedTests = model.Courses.SelectMany(c => c.Tests).Count(t => t.IsPassed);
+
+        foreach (var course in model.Courses)
+        {
+            course.ProgressPercent = course.MaxScore > 0 
+                ? Math.Round(course.TotalScore / course.MaxScore * 100, 1) 
+                : 0;
+        }
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> StartTest(int id)
+    {
+        var userId = GetUserId();
+        var test = await _context.Tests
+            .Include(t => t.Course)
+            .Include(t => t.TestElements)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (test == null)
+            return NotFound();
+
+        var existingResult = await _context.StudentResults
+            .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.TestId == id);
+
+        int attemptsUsed = existingResult?.AttemptsUsed ?? 0;
+        int attemptsLeft = test.MaxAttempts - attemptsUsed;
+
+        if (attemptsLeft <= 0)
+        {
+            TempData["Error"] = "�� ��������� ��� ������� ��� ����� �����";
+            return RedirectToAction("Index");
+        }
+
+        var model = new TestAccessViewModel
+        {
+            TestId = test.Id,
+            TestTitle = test.Title,
+            Instructions = test.Instructions,
+            TimeLimitMinutes = test.TimeLimitMinutes,
+            QuestionsCount = test.TestElements.Count,
+            AttemptsLeft = attemptsLeft,
+            RequiresPassword = !string.IsNullOrEmpty(test.AccessPassword)
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> StartTest(TestAccessViewModel model)
+    {
+        var test = await _context.Tests.FindAsync(model.TestId);
+        if (test == null)
+            return NotFound();
+
+        if (!string.IsNullOrEmpty(test.AccessPassword) && 
+            test.AccessPassword != model.EnteredPassword)
+        {
+            model.ErrorMessage = "�������� ������ �������";
+            model.RequiresPassword = true;
+            return View(model);
+        }
+
+        return RedirectToAction("TakeTest", new { id = model.TestId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> TakeTest(int id)
+    {
+        var userId = GetUserId();
+
+        var test = await _context.Tests
+            .Include(t => t.Course)
+            .Include(t => t.TestElements.OrderBy(e => e.Order))
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (test == null)
+            return NotFound();
+
+        var existingResult = await _context.StudentResults
+            .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.TestId == id);
+
+        int attemptsUsed = existingResult?.AttemptsUsed ?? 0;
+
+        if (attemptsUsed >= test.MaxAttempts)
+        {
+            TempData["Error"] = "�� ��������� ��� ������� ��� ����� �����";
+            return RedirectToAction("Index");
+        }
+
+        var elements = test.TestElements.ToList();
+        
+        // ������������ ������� ���� �����
+        if (test.ShuffleQuestions)
+        {
+            elements = elements.OrderBy(x => Guid.NewGuid()).ToList();
+        }
+
+        var model = new TakeTestViewModel
+        {
+            TestId = test.Id,
+            TestTitle = test.Title,
+            TestDescription = test.Description,
+            CourseName = test.Course?.Title ?? "",
+            MaxScore = test.MaxScore,
+            AttemptsLeft = test.MaxAttempts - attemptsUsed,
+            TimeLimitMinutes = test.TimeLimitMinutes,
+            TimeLimitSeconds = test.TimeLimitMinutes * 60,
+            OneQuestionPerPage = test.OneQuestionPerPage,
+            PreventBackNavigation = test.PreventBackNavigation,
+            DetectTabSwitch = test.DetectTabSwitch,
+            Instructions = test.Instructions,
+            PassingScorePercent = test.PassingScorePercent,
+            StartTime = DateTime.Now,
+            Questions = elements.Select((e, index) => {
+                var options = !string.IsNullOrEmpty(e.OptionsJson)
+                    ? e.OptionsJson.Split('|', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(o => o.Trim()).ToList()
+                    : new List<string>();
+                
+                // ������������ ������ ���� �����
+                if (test.ShuffleAnswers && options.Any())
+                {
+                    options = options.OrderBy(x => Guid.NewGuid()).ToList();
+                }
+
+                return new QuestionViewModel
+                {
+                    ElementId = e.Id,
+                    Order = index + 1,
+                    QuestionText = e.QuestionText,
+                    Type = e.Type,
+                    Options = options,
+                    Hint = e.Hint,
+                    ImageUrl = e.ImageUrl,
+                    TimeLimit = e.TimeLimit,
+                    AllowPartialCredit = e.AllowPartialCredit,
+                    LeftItems = e.Type == ElementType.Matching 
+                        ? options.Take(options.Count / 2).ToList() 
+                        : new List<string>(),
+                    RightItems = e.Type == ElementType.Matching 
+                        ? options.Skip(options.Count / 2).ToList() 
+                        : new List<string>(),
+                    ItemsToOrder = e.Type == ElementType.Ordering ? options : new List<string>(),
+                    // Для FillBlanks: разбираем текст и слова
+                    FillBlanksText = e.Type == ElementType.FillBlanks ? e.QuestionText : null,
+                    WordsForBlanks = e.Type == ElementType.FillBlanks 
+                        ? GetShuffledWordsForBlanks(e.CorrectAnswer, e.OptionsJson, test.ShuffleAnswers)
+                        : new List<string>(),
+                    BlanksCount = e.Type == ElementType.FillBlanks 
+                        ? e.CorrectAnswer.Split('|', StringSplitOptions.RemoveEmptyEntries).Length 
+                        : 0
+                };
+            }).ToList()
+        };
+
+        // ��������� ����� ������ � ������
+        HttpContext.Session.SetString($"TestStart_{id}", DateTime.Now.ToString("O"));
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SubmitTest(int testId, Dictionary<string, string> answers, 
+        int timeSpentSeconds = 0, int tabSwitchCount = 0)
+    {
+        var userId = GetUserId();
+
+        var test = await _context.Tests
+            .Include(t => t.TestElements)
+            .FirstOrDefaultAsync(t => t.Id == testId);
+
+        if (test == null)
+            return NotFound();
+
+        var existingResult = await _context.StudentResults
+            .Include(r => r.Attempts)
+            .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.TestId == testId);
+
+        int attemptsUsed = existingResult?.AttemptsUsed ?? 0;
+
+        if (attemptsUsed >= test.MaxAttempts)
+        {
+            TempData["Error"] = "�� ��������� ��� �������";
+            return RedirectToAction("Index");
+        }
+
+        // ������ ������
+        var parsedAnswers = new Dictionary<int, string>();
+        var parsedMultiAnswers = new Dictionary<int, List<string>>();
+
+        foreach (var answer in answers)
+        {
+            if (answer.Key.StartsWith("answer_"))
+            {
+                var elementId = int.Parse(answer.Key.Replace("answer_", ""));
+                parsedAnswers[elementId] = answer.Value ?? "";
+            }
+            else if (answer.Key.StartsWith("multi_"))
+            {
+                var elementId = int.Parse(answer.Key.Replace("multi_", "").Split('_')[0]);
+                if (!parsedMultiAnswers.ContainsKey(elementId))
+                    parsedMultiAnswers[elementId] = new List<string>();
+                if (!string.IsNullOrEmpty(answer.Value))
+                    parsedMultiAnswers[elementId].Add(answer.Value);
+            }
+        }
+
+        var gradingResult = _gradingService.CalculateDetailedScore(test, parsedAnswers, parsedMultiAnswers);
+        var score = gradingResult.TotalScore;
+        var isPassed = test.PassingScorePercent > 0 && 
+                       (score / test.MaxScore * 100) >= test.PassingScorePercent;
+
+        bool isNewBest = false;
+
+        // ������������ �����
+        var startTimeStr = HttpContext.Session.GetString($"TestStart_{testId}");
+        if (!string.IsNullOrEmpty(startTimeStr) && DateTime.TryParse(startTimeStr, out var startTime))
+        {
+            timeSpentSeconds = (int)(DateTime.Now - startTime).TotalSeconds;
+        }
+
+        var attempt = new TestAttempt
+        {
+            AttemptNumber = attemptsUsed + 1,
+            Score = score,
+            CorrectAnswers = gradingResult.CorrectCount,
+            TotalQuestions = test.TestElements.Count,
+            TimeSpentSeconds = timeSpentSeconds,
+            StartedAt = DateTime.Now.AddSeconds(-timeSpentSeconds),
+            CompletedAt = DateTime.Now,
+            AnswersJson = JsonSerializer.Serialize(parsedAnswers),
+            TabSwitchCount = tabSwitchCount
+        };
+
+        if (existingResult == null)
+        {
+            existingResult = new StudentResult
+            {
+                UserId = userId,
+                TestId = testId,
+                BestScore = score,
+                LastScore = score,
+                AttemptsUsed = 1,
+                IsCompleted = true,
+                IsPassed = isPassed,
+                TotalTimeSeconds = timeSpentSeconds,
+                FirstAttemptAt = DateTime.Now,
+                LastAttemptAt = DateTime.Now
+            };
+            attempt.StudentResultId = existingResult.Id;
+            existingResult.Attempts.Add(attempt);
+            _context.StudentResults.Add(existingResult);
+            isNewBest = true;
+        }
+        else
+        {
+            existingResult.AttemptsUsed++;
+            existingResult.LastScore = score;
+            existingResult.LastAttemptAt = DateTime.Now;
+            existingResult.IsCompleted = true;
+            existingResult.TotalTimeSeconds += timeSpentSeconds;
+
+            if (score > existingResult.BestScore)
+            {
+                existingResult.BestScore = score;
+                isNewBest = true;
+            }
+            
+            if (isPassed && !existingResult.IsPassed)
+            {
+                existingResult.IsPassed = true;
+            }
+
+            attempt.StudentResultId = existingResult.Id;
+            existingResult.Attempts.Add(attempt);
+        }
+
+        await _context.SaveChangesAsync();
+
+        // ������� ������
+        HttpContext.Session.Remove($"TestStart_{testId}");
+
+        var resultModel = new TestResultSummaryViewModel
+        {
+            TestId = test.Id,
+            TestTitle = test.Title,
+            Score = score,
+            MaxScore = test.MaxScore,
+            ScorePercent = test.MaxScore > 0 ? Math.Round(score / test.MaxScore * 100, 1) : 0,
+            CorrectAnswers = gradingResult.CorrectCount,
+            PartialAnswers = gradingResult.PartialCount,
+            WrongAnswers = gradingResult.WrongCount,
+            TotalQuestions = test.TestElements.Count,
+            IsNewBestScore = isNewBest,
+            IsPassed = isPassed,
+            PassingScorePercent = test.PassingScorePercent,
+            TimeSpentSeconds = timeSpentSeconds,
+            TimeSpentFormatted = $"{timeSpentSeconds / 60}:{timeSpentSeconds % 60:D2}",
+            ShowCorrectAnswers = test.ShowCorrectAnswers,
+            AttemptsLeft = test.MaxAttempts - existingResult.AttemptsUsed,
+            AnswerReviews = test.ShowCorrectAnswers ? gradingResult.QuestionGrades.Select(g => {
+                var element = test.TestElements.First(e => e.Id == g.ElementId);
+                return new AnswerReviewViewModel
+                {
+                    Order = element.Order,
+                    QuestionText = element.QuestionText,
+                    Type = element.Type,
+                    YourAnswer = g.YourAnswer,
+                    CorrectAnswer = g.CorrectAnswer,
+                    IsCorrect = g.IsCorrect,
+                    IsPartial = g.IsPartial,
+                    PointsEarned = g.PointsEarned,
+                    MaxPoints = g.MaxPoints,
+                    Explanation = element.Explanation
+                };
+            }).OrderBy(r => r.Order).ToList() : new List<AnswerReviewViewModel>()
+        };
+
+        return View("TestResult", resultModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> History()
+    {
+        var userId = GetUserId();
+
+        var results = await _context.StudentResults
+            .Include(r => r.Test)
+            .Include(r => r.Attempts)
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.LastAttemptAt)
+            .ToListAsync();
+
+        var model = results.Select(r => new TestHistoryViewModel
+        {
+            TestId = r.TestId,
+            TestTitle = r.Test?.Title ?? "",
+            BestScore = r.BestScore,
+            MaxScore = r.Test?.MaxScore ?? 0,
+            Attempts = r.Attempts.OrderByDescending(a => a.AttemptNumber).Select(a => new AttemptViewModel
+            {
+                AttemptNumber = a.AttemptNumber,
+                Score = a.Score,
+                MaxScore = r.Test?.MaxScore ?? 0,
+                CorrectAnswers = a.CorrectAnswers,
+                TotalQuestions = a.TotalQuestions,
+                TimeSpentSeconds = a.TimeSpentSeconds,
+                TimeSpentFormatted = $"{a.TimeSpentSeconds / 60}:{a.TimeSpentSeconds % 60:D2}",
+                CompletedAt = a.CompletedAt,
+                IsBest = a.Score == r.BestScore
+            }).ToList()
+        }).ToList();
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Формирует перемешанный список слов для FillBlanks вопроса
+    /// </summary>
+    private List<string> GetShuffledWordsForBlanks(string correctAnswer, string? optionsJson, bool shuffle)
+    {
+        var words = new List<string>();
+        
+        // Добавляем правильные ответы
+        var correctWords = correctAnswer
+            .Split('|', StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => w.Trim())
+            .ToList();
+        words.AddRange(correctWords);
+        
+        // Добавляем дистракторы из OptionsJson (если есть)
+        if (!string.IsNullOrEmpty(optionsJson))
+        {
+            var distractors = optionsJson
+                .Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.Trim())
+                .Where(w => !correctWords.Contains(w, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+            words.AddRange(distractors);
+        }
+        
+        // Перемешиваем если нужно
+        if (shuffle)
+        {
+            words = words.OrderBy(x => Guid.NewGuid()).ToList();
+        }
+        
+        return words;
+    }
+}

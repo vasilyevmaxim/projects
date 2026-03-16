@@ -1,0 +1,61 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Вход для преподавателей";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card">
+            <div class="card-header text-center py-4" style="background: var(--success-gradient);">
+                <i class="bi bi-person-workspace display-4 text-white mb-2"></i>
+                <h4 class="text-white mb-0">Вход для преподавателей</h4>
+            </div>
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@ViewBag.Error
+                    </div>
+                }
+
+                <form asp-action="TeacherLogin" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">
+                            <i class="bi bi-envelope me-1"></i>Email
+                        </label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="admin@test.ru" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">
+                            <i class="bi bi-lock me-1"></i>Пароль
+                        </label>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                        </button>
+                    </div>
+                </form>
+
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>По умолчанию:</strong><br />
+                    Email: admin@test.ru<br />
+                    Пароль: admin123
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-action="Login" class="text-muted">
+                <i class="bi bi-person me-1"></i>Вход для студентов
+            </a>
+        </div>
+    </div>
+</div>
