@@ -1,0 +1,14 @@
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\bin\Debug\net8.0\ProcedureMapGenerator.exe
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\bin\Debug\net8.0\ProcedureMapGenerator.deps.json
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\bin\Debug\net8.0\ProcedureMapGenerator.runtimeconfig.json
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\bin\Debug\net8.0\ProcedureMapGenerator.dll
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\bin\Debug\net8.0\ProcedureMapGenerator.pdb
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.AssemblyInfoInputs.cache
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.AssemblyInfo.cs
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.csproj.CoreCompileInputs.cache
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.dll
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\refint\ProcedureMapGenerator.dll
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.pdb
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ProcedureMapGenerator.genruntimeconfig.cache
+C:\Users\vasilyev\source\repos\ProcedureMapGenerator\ProcedureMapGenerator\obj\Debug\net8.0\ref\ProcedureMapGenerator.dll
